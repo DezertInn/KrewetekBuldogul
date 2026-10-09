@@ -40,7 +40,7 @@ Use the exact branch names `Dev` and `Main`. Both branches are published. `Dev` 
 
 ## Next steps
 
-1. Confirm the collaborator's GitHub username if repository write access is needed; sharing and invitation status are tracked separately in the collaboration document.
+1. The collaborator accepts the pending GitHub invitation, then active write access is verified; see [collaboration status](docs/COLLABORATION.md).
 2. Review the provisional TypeScript + Babylon.js recommendation for browser 3D and the exact controller/browser matrix.
 3. Fill in the gameplay and art design templates; confirm the camera and asset pipeline details.
 4. Explicitly request the first implementation milestone when ready. This documentation does not authorize implementation.

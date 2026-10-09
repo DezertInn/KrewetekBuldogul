@@ -42,14 +42,14 @@ Five initial questions and a follow-up about the missing Git commit author were 
 
 | Question | Status | Impact |
 | --- | --- | --- |
-| Intended GitHub owner and collaborator identity | Verified repository owner: `DezertInn`; the public repository, both branches, and default `Dev` are confirmed. Local Git write access is demonstrated, but the currently authenticated account identity was not independently verified. Collaborator supplied as an email, not a verified GitHub username | Repository setup is complete; collaborator identity and any write-access invitation remain pending. See [Collaboration](COLLABORATION.md) |
+| Intended GitHub owner and collaborator identity | Verified repository owner and authenticated administrator: `DezertInn`; the public repository, both branches, and default `Dev` are confirmed. User confirmed collaborator `loszavera`, whose GitHub account was verified | Write-access invitation sent on 2026-10-09 and verified as pending acceptance; active write access is not yet confirmed. See [Collaboration](COLLABORATION.md) |
 | Presentation | Answered: 3D graphics with isometric top-down presentation, referencing Hades II | Recorded as R13; rendering approach proposed as P02 |
 | Initial browser/device/OS targets | Answered: Windows desktop browsers first, other desktop systems later | Recorded as R14; exact versions/hardware remain proposed |
 | Team programming and game-engine experience | Preference supplied: recommend free tools fully usable through Codex in VS Code; prior experience not specified | Recorded as R16; do not assume prior engine skills |
 | Xbox models and controller connection types | Answered: Xbox One/Series and DualShock 4, USB and Bluetooth | Recorded as R15; exact hardware revisions remain TBD |
 | Git commit author | User supplied an author email; no separate display name supplied | Use the supplied identity for the setup commit, without inferring a different person or GitHub login |
 
-Account identity and contact details belong in private setup context, not this public document.
+Private account details and contact information belong in private setup context, not this public document.
 
 ## Intentionally deferred design decisions
 
