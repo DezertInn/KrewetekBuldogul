@@ -8,7 +8,7 @@ import { SceneInstrumentation } from '@babylonjs/core/Instrumentation/sceneInstr
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
-import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Plane } from '@babylonjs/core/Maths/math.plane';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
@@ -20,6 +20,7 @@ import '@babylonjs/core/Culling/ray';
 import { BOXER_RULES, RIFLE_RULES, ROOM, WEAPONS } from '../game/config';
 import { rayCoverDistance, rayTargetDistance, meleeEligible } from '../game/simulation';
 import type { EnemyState, GameState, HitEvent, Vec2 } from '../game/types';
+import { samplePillarPose, twoBoneJoint, type PillarPose, type PoseVector } from './pillar-animation';
 
 // Original, reproducible prototype placeholders. No downloaded assets or shaders.
 const PALETTE = {
@@ -33,6 +34,7 @@ type BoxerView = {
   root: TransformNode; body: TransformNode; arms: TransformNode[]; legs: TransformNode[];
   cue: RangeCue; health: TransformNode; healthFill: Mesh; target: Mesh; material: StandardMaterial;
 };
+type LimbView = { root: TransformNode; upper: Mesh; lower: Mesh; joint: Mesh; end: Mesh };
 
 export class GameView {
   readonly engine: Engine;
@@ -43,12 +45,15 @@ export class GameView {
   private readonly staticMeshes: Mesh[] = [];
   private readonly player: TransformNode;
   private readonly body: TransformNode;
+  private readonly torso: TransformNode;
   private readonly legs: TransformNode[] = [];
   private readonly arms: TransformNode[] = [];
   private readonly gloves: Mesh[] = [];
   private readonly rifle: TransformNode;
   private readonly rifleMagazine: Mesh;
   private readonly pillar: TransformNode;
+  private readonly pillarArms: LimbView[] = [];
+  private readonly pillarLegs: LimbView[] = [];
   private readonly scarf: TransformNode;
   private readonly shadow: Mesh;
   private readonly dummy: TransformNode;
@@ -65,6 +70,10 @@ export class GameView {
   private lastHitId = -1;
   private previousTime = 0;
   private walkPhase = 0;
+  private lastWeapon: GameState['weapon'] | null = null;
+  private lastOutcome: GameState['outcome'] | null = null;
+  private terminalSwing: number | null = null;
+  private pillarPose: PillarPose = samplePillarPose('ready', 0);
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.engine = new Engine(canvas, true, { stencil: false, preserveDrawingBuffer: false }, false);
@@ -98,13 +107,17 @@ export class GameView {
     this.player = new TransformNode('player', this.scene);
     this.body = new TransformNode('body-animation', this.scene);
     this.body.parent = this.player;
+    this.torso = new TransformNode('torso-animation', this.scene);
+    this.torso.parent = this.body;
+    this.torso.setPivotPoint(new Vector3(0, 0.78, 0));
     this.scarf = new TransformNode('scarf-secondary-motion', this.scene);
-    this.scarf.parent = this.body;
+    this.scarf.parent = this.torso;
     this.buildCharacter();
     const rifle = this.buildRifle();
     this.rifle = rifle.root;
     this.rifleMagazine = rifle.magazine;
     this.pillar = this.buildPillar();
+    this.buildPillarLimbs();
     this.shadow = this.disc('player-contact', 0.9, this.material('shadow', '#142B33', 0.25), null, 0, 0.026, 0);
     this.shadow.scaling.z = 0.8;
 
@@ -304,12 +317,12 @@ export class GameView {
   }
 
   private buildCharacter(): void {
-    this.box('athletic-torso', 0.62, 0.6, 0.37, this.color('teal'), this.body, 0, 1.1, 0);
-    this.box('jacket-hem', 0.60, 0.10, 0.38, this.color('ink'), this.body, 0, 0.83, 0);
-    this.box('jacket-zip', 0.035, 0.39, 0.02, this.color('cream'), this.body, 0, 1.06, 0.195);
+    this.box('athletic-torso', 0.62, 0.6, 0.37, this.color('teal'), this.torso, 0, 1.1, 0);
+    this.box('jacket-hem', 0.60, 0.10, 0.38, this.color('ink'), this.torso, 0, 0.83, 0);
+    this.box('jacket-zip', 0.035, 0.39, 0.02, this.color('cream'), this.torso, 0, 1.06, 0.195);
     this.box('hips', 0.42, 0.24, 0.32, this.color('plum'), this.body, 0, 0.7, 0);
     for (const side of [-1, 1]) {
-      this.box('shoulder-panel', 0.15, 0.15, 0.4, this.color('gold'), this.body, side * 0.27, 1.31, 0);
+      this.box('shoulder-panel', 0.15, 0.15, 0.4, this.color('gold'), this.torso, side * 0.27, 1.31, 0);
       const leg = new TransformNode(`leg-${side}`, this.scene);
       leg.parent = this.body;
       leg.position.set(side * 0.16, 0.67, 0);
@@ -318,7 +331,7 @@ export class GameView {
       this.box('sneaker-sole', 0.28, 0.04, 0.40, this.color('ink'), leg, 0, -0.62, 0.08);
       this.legs.push(leg);
       const arm = new TransformNode(`arm-${side}`, this.scene);
-      arm.parent = this.body;
+      arm.parent = this.torso;
       arm.position.set(side * 0.38, 1.12, 0.14);
       this.sphere('sleeve', 0.30, this.color('teal'), arm, 0, 0, -0.10).scaling.y = 1.2;
       this.gloves.push(this.sphere('glove-cuff', 0.23, this.color('ink'), arm, 0, -0.015, 0.10));
@@ -328,20 +341,20 @@ export class GameView {
       this.sphere('hand', 0.19, this.color('skin'), arm, 0, 0, 0.18);
       this.arms.push(arm);
     }
-    this.cylinder('neck', 0.21, 0.17, this.color('skin'), this.body, 0, 1.47, 0);
-    this.sphere('original-fictional-face', 0.47, this.color('skin'), this.body, 0, 1.72, 0.015).scaling.set(0.92, 1.12, 0.92);
-    this.sphere('copper-hair', 0.48, this.color('hair'), this.body, 0, 1.87, -0.025).scaling.set(0.96, 0.63, 0.96);
-    this.sphere('asymmetric-forelock', 0.20, this.color('hair'), this.body, -0.10, 1.90, 0.13);
-    this.sphere('nose', 0.11, this.color('skin'), this.body, 0, 1.70, 0.235);
+    this.cylinder('neck', 0.21, 0.17, this.color('skin'), this.torso, 0, 1.47, 0);
+    this.sphere('original-fictional-face', 0.47, this.color('skin'), this.torso, 0, 1.72, 0.015).scaling.set(0.92, 1.12, 0.92);
+    this.sphere('copper-hair', 0.48, this.color('hair'), this.torso, 0, 1.87, -0.025).scaling.set(0.96, 0.63, 0.96);
+    this.sphere('asymmetric-forelock', 0.20, this.color('hair'), this.torso, -0.10, 1.90, 0.13);
+    this.sphere('nose', 0.11, this.color('skin'), this.torso, 0, 1.70, 0.235);
     for (const side of [-1, 1]) {
-      this.sphere('eye', 0.036, this.color('ink'), this.body, side * 0.098, 1.76, 0.214);
-      const brow = this.box('eyebrow', 0.085, 0.026, 0.025, this.color('hair'), this.body, side * 0.098, 1.806 + (side > 0 ? 0.016 : 0), 0.207);
+      this.sphere('eye', 0.036, this.color('ink'), this.torso, side * 0.098, 1.76, 0.214);
+      const brow = this.box('eyebrow', 0.085, 0.026, 0.025, this.color('hair'), this.torso, side * 0.098, 1.806 + (side > 0 ? 0.016 : 0), 0.207);
       brow.rotation.z = side * -0.1;
     }
-    const grin = this.box('crooked-grin', 0.14, 0.029, 0.035, this.color('cream'), this.body, 0.015, 1.604, 0.202);
+    const grin = this.box('crooked-grin', 0.14, 0.029, 0.035, this.color('cream'), this.torso, 0.015, 1.604, 0.202);
     grin.rotation.z = 0.10;
-    this.cylinder('scarf-neck-red', 0.46, 0.15, this.color('red'), this.body, 0, 1.435, 0);
-    this.cylinder('scarf-neck-white', 0.464, 0.045, this.color('cream'), this.body, 0, 1.45, 0);
+    this.cylinder('scarf-neck-red', 0.46, 0.15, this.color('red'), this.torso, 0, 1.435, 0);
+    this.cylinder('scarf-neck-white', 0.464, 0.045, this.color('cream'), this.torso, 0, 1.45, 0);
     this.scarf.position.set(-0.11, 1.42, 0.23);
     for (let i = 0; i < 4; i++) {
       this.box('front-scarf-block', 0.17, 0.13, 0.065, this.color(i % 2 ? 'cream' : 'red'), this.scarf, 0, -i * 0.13, 0.025 + i * 0.015);
@@ -370,18 +383,88 @@ export class GameView {
 
   private buildPillar(): TransformNode {
     const root = new TransformNode('portable-monument-placeholder', this.scene);
-    root.parent = this.body;
+    root.parent = this.torso;
     root.position.set(0.48, 1.02, 0.25);
     const stone = this.material('pillar-stone', '#BBB7A7');
     this.cylinder('pillar-shortened-shaft', 0.21, 1.5, stone, root, 0, 0.25, 0, 0.27);
     this.box('pillar-capital', 0.48, 0.16, 0.45, this.color('plaster'), root, 0, 1.04, 0);
     this.box('pillar-base', 0.42, 0.17, 0.41, stone, root, 0, -0.58, 0);
     this.cylinder('pillar-neck', 0.29, 0.12, this.color('plaster'), root, 0, 0.9, 0);
+    this.cylinder('pillar-lower-grip-wrap', 0.26, 0.15, this.color('red'), root, 0, -0.12, 0);
+    this.cylinder('pillar-upper-grip-wrap', 0.26, 0.15, this.color('cream'), root, 0, 0.22, 0);
     // Abstract geometric finial; not a reproduction of a statue or scan.
     this.cylinder('pillar-finial', 0.20, 0.3, this.color('gold'), root, 0, 1.25, 0, 0.07);
     this.sphere('pillar-finial-tip', 0.14, this.color('gold'), root, 0, 1.43, 0);
     root.setEnabled(false);
     return root;
+  }
+
+  private buildPillarLimbs(): void {
+    for (const side of [-1, 1]) {
+      const arm = new TransformNode(`pillar-two-handed-arm-${side}`, this.scene);
+      arm.parent = this.torso;
+      const upper = this.cylinder('pillar-upper-sleeve', 0.24, 1, this.color('teal'), arm, 0, 0, 0, 0.29);
+      const lower = this.cylinder('pillar-forearm', 0.16, 1, this.color('skin'), arm, 0, 0, 0, 0.21);
+      const joint = this.sphere('pillar-elbow', 0.22, this.color('teal'), arm, 0, 0, 0);
+      const hand = this.sphere('pillar-gripping-hand', 0.22, this.color('skin'), arm, 0, 0, 0);
+      hand.scaling.set(1, 0.82, 1);
+      this.pillarArms.push({ root: arm, upper, lower, joint, end: hand });
+      arm.setEnabled(false);
+      const leg = new TransformNode(`pillar-braced-leg-${side}`, this.scene);
+      leg.parent = this.player;
+      const thigh = this.cylinder('pillar-trouser-thigh', 0.24, 1, this.color('plum'), leg, 0, 0, 0, 0.28);
+      const shin = this.cylinder('pillar-trouser-shin', 0.22, 1, this.color('plum'), leg, 0, 0, 0, 0.24);
+      const knee = this.sphere('pillar-knee', 0.23, this.color('plum'), leg, 0, 0, 0);
+      const foot = this.box('pillar-planted-sneaker', 0.28, 0.14, 0.40, this.color('cream'), leg, 0, 0, 0);
+      const sole = this.box('pillar-planted-sole', 0.29, 0.04, 0.41, this.color('ink'), foot, 0, -0.065, 0);
+      sole.isPickable = false;
+      this.pillarLegs.push({ root: leg, upper: thigh, lower: shin, joint: knee, end: foot });
+      leg.setEnabled(false);
+    }
+  }
+
+  private placeSegment(mesh: Mesh, start: Vector3, end: Vector3): void {
+    const direction = end.subtract(start);
+    mesh.position.copyFrom(start.add(end).scale(0.5));
+    mesh.scaling.y = direction.length();
+    mesh.rotationQuaternion ??= Quaternion.Identity();
+    Quaternion.FromUnitVectorsToRef(Vector3.Up(), direction.normalize(), mesh.rotationQuaternion);
+  }
+
+  private animatePillarLimbs(pose: PillarPose, walking: boolean): void {
+    this.player.computeWorldMatrix(true);
+    this.body.computeWorldMatrix(true);
+    this.torso.computeWorldMatrix(true);
+    this.pillar.computeWorldMatrix(true);
+    const inverseTorso = Matrix.Invert(this.torso.getWorldMatrix());
+    const inversePlayer = Matrix.Invert(this.player.getWorldMatrix());
+    this.pillarArms.forEach((limb, i) => {
+      const side = i === 0 ? -1 : 1;
+      const shoulder = new Vector3(side * 0.35, 1.26, 0);
+      const gripWorld = Vector3.TransformCoordinates(new Vector3(0, i === 0 ? 0.22 : -0.12, 0), this.pillar.getWorldMatrix());
+      const grip = Vector3.TransformCoordinates(gripWorld, inverseTorso);
+      const elbowPose = twoBoneJoint(shoulder, grip, 0.44, 0.48, { x: side, y: -0.65, z: -0.4 });
+      const elbow = new Vector3(elbowPose.x, elbowPose.y, elbowPose.z);
+      this.placeSegment(limb.upper, shoulder, elbow);
+      this.placeSegment(limb.lower, elbow, grip);
+      limb.joint.position.copyFrom(elbow);
+      limb.end.position.copyFrom(grip);
+    });
+    this.pillarLegs.forEach((limb, i) => {
+      const side = i === 0 ? -1 : 1;
+      const hip = Vector3.TransformCoordinates(Vector3.TransformCoordinates(new Vector3(side * 0.17, 0.71, 0), this.body.getWorldMatrix()), inversePlayer);
+      const footPose = pose.feet[i];
+      const stride = walking ? Math.sin(this.walkPhase + i * Math.PI) : 0;
+      const ankle = new Vector3(footPose.x, 0.12 + Math.max(0, stride) * 0.06, footPose.z + stride * 0.09);
+      const kneePose = twoBoneJoint(hip, ankle, 0.34, 0.37, { x: side * 0.20, y: 0, z: 1 });
+      const knee = new Vector3(kneePose.x, kneePose.y, kneePose.z);
+      this.placeSegment(limb.upper, hip, knee);
+      this.placeSegment(limb.lower, knee, ankle);
+      limb.joint.position.copyFrom(knee);
+      limb.end.position.set(ankle.x, ankle.y - 0.035, ankle.z + 0.065);
+      limb.end.rotation.y = side * 0.13 + pose.body.rotation.y * 0.15;
+      limb.end.rotation.x = Math.max(0, stride) * -0.10;
+    });
   }
 
   private buildDummy(): void {
@@ -556,14 +639,26 @@ export class GameView {
     }
   }
 
-  render(state: GameState, events: HitEvent[], dt: number): void {
-    const effectDt = Math.max(0, Math.min(dt, state.time - this.previousTime));
-    if (state.time < this.previousTime) {
+  render(state: GameState, events: HitEvent[], dt: number, cosmeticDt = 0): void {
+    const cosmeticStep = state.outcome === 'complete' ? Math.max(0, Math.min(0.1, cosmeticDt)) : 0;
+    const effectDt = Math.max(0, Math.min(dt, state.time - this.previousTime)) + cosmeticStep;
+    if (state.time < this.previousTime || state.weapon !== this.lastWeapon || this.lastOutcome !== 'playing' && state.outcome === 'playing') {
       this.lastHitId = -1;
       this.previous = null;
       this.walkPhase = 0;
+      this.terminalSwing = null;
+      this.pillarPose = samplePillarPose('ready', 0);
       for (const effect of this.impacts) { effect.age = 1; effect.root.setEnabled(false); }
     }
+    const finishingPillarHit = state.outcome === 'complete' && state.weapon === 'weapon_03'
+      && events.some(event => event.id > this.lastHitId && event.source === 'player' && event.weapon === 'weapon_03');
+    if (finishingPillarHit) this.terminalSwing = Math.max(0, Math.min(1, state.player.attackProgress)) * WEAPONS.weapon_03.active / 60;
+    else if (this.terminalSwing !== null) {
+      this.terminalSwing += cosmeticStep;
+      if (this.terminalSwing >= (WEAPONS.weapon_03.active + WEAPONS.weapon_03.recovery) / 60 || state.outcome !== 'complete') this.terminalSwing = null;
+    }
+    this.lastWeapon = state.weapon;
+    this.lastOutcome = state.outcome;
     this.previousTime = state.time;
     const p = state.player;
     const moved = this.previous ? Math.hypot(p.position.x - this.previous.x, p.position.z - this.previous.z) : 0;
@@ -574,16 +669,24 @@ export class GameView {
     this.player.rotation.y = Math.atan2(p.facing.x, p.facing.z);
     this.body.position.y = walking ? Math.abs(Math.sin(this.walkPhase)) * 0.055 : Math.sin(state.time * 3) * 0.018;
     this.body.rotation.x = p.health <= 0 ? -Math.PI * 0.45 : p.hitFlash > 0 ? -0.10 : p.dashRemaining > 0 ? 0.2 : 0;
+    this.body.rotation.y = 0;
     this.body.rotation.z = 0;
+    this.torso.rotation.set(0, 0, 0);
     this.legs.forEach((leg, i) => { leg.rotation.x = walking ? Math.sin(this.walkPhase + i * Math.PI) * 0.42 : 0; });
     const phase = p.attackPhase;
     const weapon = WEAPONS[state.weapon];
+    const range = (state as GameState & { effectiveRange?: number }).effectiveRange ?? weapon.range;
     const candidates = state.sessionMode === 'dummy' ? [{ ...state.dummy, id: 'dummy' }] : state.enemies;
     const gloves = state.weapon === 'weapon_02';
     const rifle = state.weapon === 'weapon_01';
     this.gloves.forEach(mesh => mesh.setEnabled(gloves));
     this.rifle.setEnabled(rifle);
     this.pillar.setEnabled(state.weapon === 'weapon_03');
+    const holdingPillar = state.weapon === 'weapon_03' && p.health > 0;
+    this.arms.forEach(arm => arm.setEnabled(!holdingPillar));
+    this.legs.forEach(leg => leg.setEnabled(!holdingPillar));
+    this.pillarArms.forEach(limb => limb.root.setEnabled(holdingPillar));
+    this.pillarLegs.forEach(limb => limb.root.setEnabled(holdingPillar));
     const extension = phase === 'active' ? 0.50 : phase === 'startup' ? -0.08 * p.attackProgress : phase === 'recovery' ? 0.48 * (1 - p.attackProgress) : 0;
     this.arms.forEach((arm, i) => {
       arm.position.z = 0.14 + (gloves && i === p.combo % 2 ? extension : !gloves ? 0.12 : 0);
@@ -599,24 +702,37 @@ export class GameView {
     this.rifle.rotation.x = phase === 'reload' ? -0.15 : 0;
     this.rifleMagazine.position.y = -0.21 - (phase === 'reload' ? Math.sin(p.reloadProgress * Math.PI) * 0.32 : 0);
     if (state.weapon === 'weapon_03') {
-      const sweep = phase === 'startup' ? -0.8 * p.attackProgress : phase === 'active' ? -0.8 + p.attackProgress * 1.6 : phase === 'recovery' ? 0.8 * (1 - p.attackProgress) : 0;
-      this.pillar.rotation.set(phase === 'ready' ? 0.28 : 0.75, sweep, -0.27);
-      this.pillar.position.x = 0.45 + Math.sin(sweep) * 0.27;
-      this.body.rotation.y = sweep * 0.13;
-    } else this.body.rotation.y = 0;
+      const activeSeconds = WEAPONS.weapon_03.active / 60;
+      const pose = this.terminalSwing === null ? samplePillarPose(phase, p.attackProgress)
+        : this.terminalSwing < activeSeconds ? samplePillarPose('active', this.terminalSwing / activeSeconds)
+        : samplePillarPose('recovery', (this.terminalSwing - activeSeconds) / (WEAPONS.weapon_03.recovery / 60));
+      this.pillarPose = pose;
+      this.pillar.position.set(pose.weapon.position.x, pose.weapon.position.y, pose.weapon.position.z);
+      this.pillar.rotation.set(pose.weapon.rotation.x, pose.weapon.rotation.y, pose.weapon.rotation.z);
+      if (holdingPillar && p.dashRemaining <= 0) {
+        this.body.position.y += pose.body.height;
+        this.body.rotation.set(pose.body.rotation.x + (p.hitFlash > 0 ? -0.10 : 0), pose.body.rotation.y, pose.body.rotation.z);
+        this.torso.rotation.set(pose.torso.x, pose.torso.y, pose.torso.z);
+      }
+      if (holdingPillar) this.animatePillarLimbs(pose, walking);
+    }
     this.scarf.rotation.x = p.dashRemaining > 0 ? -0.7 : Math.sin(state.time * 7) * (walking ? 0.2 : 0.035);
     this.scarf.rotation.z = walking ? Math.sin(this.walkPhase * 0.5) * 0.12 : 0;
+    if (holdingPillar && p.dashRemaining <= 0) {
+      this.scarf.rotation.x -= this.pillarPose.torso.x * 0.75;
+      this.scarf.rotation.z -= this.pillarPose.body.rotation.y * 0.18;
+    }
     this.shadow.position.set(p.position.x, 0.069, p.position.z);
     this.aim.root.setEnabled(!rifle && p.health > 0);
-    if (!rifle) this.updateCone(this.aim, p.position, p.facing, weapon.range, weapon.halfAngle,
+    if (!rifle) this.updateCone(this.aim, p.position, p.facing, range, weapon.halfAngle,
       phase === 'active' ? PALETTE.gold : PALETTE.cream, phase === 'active' ? 0.42 : phase === 'startup' ? 0.23 : phase === 'recovery' ? 0.11 : 0.055);
-    const coverDistance = rayCoverDistance(p.position, p.facing, weapon.range + 1, ROOM);
-    let rayDistance = Math.min(weapon.range, coverDistance);
+    const coverDistance = rayCoverDistance(p.position, p.facing, range + 1, ROOM);
+    let rayDistance = Math.min(range, coverDistance);
     let rifleTarget: string | null = null;
     if (rifle) for (const target of candidates.filter(target => target.health > 0).sort((a, b) => a.id.localeCompare(b.id))) {
       const distance = rayTargetDistance(p.position, p.facing, target);
       // Match hitscan's inclusive range endpoint and cover-first intersection ties.
-      if (distance <= weapon.range + 1e-9 && distance < coverDistance - 1e-9 && (distance < rayDistance - 1e-9 || !rifleTarget && distance <= rayDistance + 1e-9)) { rayDistance = distance; rifleTarget = target.id; }
+      if (distance <= range + 1e-9 && distance < coverDistance - 1e-9 && (distance < rayDistance - 1e-9 || !rifleTarget && distance <= rayDistance + 1e-9)) { rayDistance = distance; rifleTarget = target.id; }
     }
     this.rifleAim.setEnabled(rifle && p.health > 0);
     if (rifle) MeshBuilder.CreateLines(this.rifleAim.name, {
@@ -635,7 +751,7 @@ export class GameView {
     this.dummyBody.scaling.set(1 + flash * 0.08, spent ? 0.55 : 1 - flash * 0.05, 1 + flash * 0.08);
     // The floor fan shows weapon reach. Rings identify eligible target bodies,
     // including their radius at the reach boundary, using the combat helper.
-    const eligible = candidates.filter(target => target.health > 0 && !rifle && meleeEligible(p.position, p.facing, target, weapon.range, weapon.halfAngle, ROOM))
+    const eligible = candidates.filter(target => target.health > 0 && !rifle && meleeEligible(p.position, p.facing, target, range, weapon.halfAngle, ROOM))
       .sort((a, b) => Math.hypot(a.position.x - p.position.x, a.position.z - p.position.z) - Math.hypot(b.position.x - p.position.x, b.position.z - p.position.z) || a.id.localeCompare(b.id));
     const selected = new Set((gloves ? eligible.slice(0, 1) : eligible).map(target => target.id));
     if (rifleTarget) selected.add(rifleTarget);
@@ -702,6 +818,18 @@ export class GameView {
     this.camera.orthoBottom = -halfHeight;
     this.camera.orthoLeft = -halfHeight * aspect;
     this.camera.orthoRight = halfHeight * aspect;
+  }
+
+  /** Debug evidence contains actual rendered hand/grip coordinates, never gameplay state. */
+  getPillarPose(): PillarPose & { enabled: boolean; terminal: boolean; grips: PoseVector[]; hands: PoseVector[]; gripErrors: number[] } {
+    const point = (value: Vector3): PoseVector => ({ x: value.x, y: value.y, z: value.z });
+    this.pillar.computeWorldMatrix(true);
+    const grips = [0.22, -0.12].map(height => Vector3.TransformCoordinates(new Vector3(0, height, 0), this.pillar.getWorldMatrix()));
+    const hands = this.pillarArms.map(limb => { limb.end.computeWorldMatrix(true); return limb.end.getAbsolutePosition(); });
+    return {
+      ...structuredClone(this.pillarPose), enabled: this.pillar.isEnabled(), terminal: this.terminalSwing !== null,
+      grips: grips.map(point), hands: hands.map(point), gripErrors: grips.map((grip, i) => Vector3.Distance(grip, hands[i])),
+    };
   }
 
   pointerAim(clientX: number, clientY: number, player: Vec2): Vec2 | null {

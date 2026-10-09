@@ -1,6 +1,6 @@
 # KrewetekBuldogul — Game Design Draft
 
-**Document status:** Design draft with authorized milestone 2 combat foundation, 2026-10-09. The supplied creative brief is **Confirmed**; all names, story details, mechanics, quantities beyond that brief, and numerical tuning below are **Proposed** unless explicitly marked otherwise. **TBD** identifies an unresolved decision. The [milestone 2 prototype rules](#64-authorized-milestone-2-combat-foundation) preserve the accepted milestone 1 feel; they do not approve final production balance. The [current validation report](MILESTONE_2_VALIDATION.md) records checks separately from the [historical milestone 1 report](MILESTONE_1_VALIDATION.md).
+**Document status:** Design draft with authorized milestone 3 short-run foundation, updated 2026-10-10. The supplied creative brief is **Confirmed**; all names, story details, mechanics, quantities beyond that brief, and numerical tuning below are **Proposed** unless explicitly marked otherwise. **TBD** identifies an unresolved decision. The [milestone 2 prototype rules](#64-authorized-milestone-2-combat-foundation) and [milestone 3 override](#65-authorized-milestone-3-short-run-override) preserve accepted combat feel while authorizing bounded test progression; they do not approve final production balance. [Milestone 3 validation](MILESTONE_3_VALIDATION.md) records current checks separately from historical [milestone 2](MILESTONE_2_VALIDATION.md) and [milestone 1](MILESTONE_1_VALIDATION.md) reports.
 
 **Design owner / approval:** TBD. This document owns gameplay rules, content IDs, and balance values. [Art Design](ART_DESIGN_TEMPLATE.md) owns presentation specifications; [Technical Design](TECHNICAL_DESIGN.md) owns architecture and platform validation. Cross-document decisions and prioritized open questions belong in the [decision register](DECISIONS_AND_OPEN_QUESTIONS.md). The existing filename is retained for link compatibility.
 
@@ -20,9 +20,9 @@
 | Audio | Cartoonish, pleasant sound effects; no music |
 | Inputs | Customizable gameplay and menu actions on keyboard/mouse, DualShock 4, and Xbox One/Series; controller USB/Bluetooth validation on compatible hardware |
 | Delivery and workflow | Browser deployment preferred; Windows desktop browsers first, other desktop systems later; free tools and a code-first Codex in VS Code workflow |
-| Current authorization | Milestone 2 input/combat foundation: TypeScript/Babylon.js/Vite, procedural gym/player/three weapons/boxers, dummy and encounter modes, complete input customization, local settings profiles, and validation. Section 6.4 governs current prototype tuning; milestone 3 and later, production assets/audio, and deployment remain outside scope |
+| Current authorization | Milestone 3 short-run foundation plus a procedural heavy pillar swing, continuing the milestone 2 input/combat base. Sections 6.4–6.5 own current adjustable prototype rules. Production campaign/bosses/art/audio, milestones 4 and later, and new deployment actions remain outside scope |
 
-One local player, a fixed orthographic camera, and TypeScript + Babylon.js + Vite are approved for milestones 1–2; broader production design remains subject to review. Multiplayer, accounts, cloud saves, mobile/touch input, native builds, and a licensed real-person portrayal are not requirements. References do not authorize copying Hades characters, narrative, compositions, UI, or assets, and do not establish how Hades II renders internally.
+One local player, a fixed orthographic camera, and TypeScript + Babylon.js + Vite are approved for milestones 1–3; broader production design remains subject to review. Multiplayer, accounts, cloud saves, mobile/touch input, native builds, and a licensed real-person portrayal are not requirements. References do not authorize copying Hades characters, narrative, compositions, UI, or assets, and do not establish how Hades II renders internally.
 
 ## 2. Vision and experience
 
@@ -185,7 +185,33 @@ Use fractional damage internally; HUD rounding cannot change health or damage ca
 
 The combat test uses exactly three instances of the proposed `B01_E01` Jabber in the existing gym, separately from dummy practice. Their GDD health/damage/telegraph/poise behavior is an adjustable prototype default. Test-fixture additions are radius 0.36 m, movement 2.8 m/s, a 60-degree jab cone with a 3-tick active window, one second of initial preparation grace, and fixed starting positions `(-1.2, 1.7)`, `(1.2, 1.7)`, `(0, 3.4)` in ground-plane coordinates. At most two enemies prepare or actively attack simultaneously. Visibility and unobstructed attack checks prevent offscreen initiation and hitting through cover. Health reaching zero stops the round; killing all three completes it. These fixture choices do not approve full-level layouts or roster production.
 
-Milestone 2 remains silent and uses original procedural placeholders. No bosses, rewards, power-ups, route progression, run saves, production assets, or public deployment are included. Production balance still needs playtesting and owner review; preserve equal melee baseline sustained DPS and slightly lower rifle DPS.
+The historical milestone 2 scope remained silent and excluded bosses, rewards, power-ups, route progression, run saves, production assets, and public deployment. Milestone 3 now adds only the progression subset in section 6.5 and remains silent/procedural. Production balance still needs playtesting and owner review; preserve equal melee baseline sustained DPS and slightly lower rifle DPS.
+
+### 6.5 Authorized milestone 3 short-run override
+
+**Confirmed authorization, 2026-10-10:** implement the proposed short-run milestone and improve the heavy pillar swing. These are adjustable prototype defaults, not approval of the production route, full 21-example catalog, assets/audio, or final balance. Keep dummy practice and the standalone boxer test available alongside the run.
+
+The test route contains exactly three sequential formations of the existing `B01_E01` boxers in the procedural gym. Stable stage IDs are `M3_STAGE_01`–`M3_STAGE_03`, with separate `M3_B01L01`–`M3_B01L03`, room, and encounter IDs in [test content](../src/run/content.ts). These do not replace the proposed production `B01L01`–`B03L03` route. The confirmed full game still has nine levels and three major encounters.
+
+Start with no upgrades and one chosen weapon. Carry health, ammunition, dash/attack/protection cooldowns, barrier, acquired effect IDs, fractional Impact, and remaining effect durations between stages; do not restore health or ammunition merely by changing stages. After clearing stages one and two, roll three distinct unowned choices from the seven-entry pool below and select exactly one while paused. There is no starting reward, reroll, duplicate ownership, weapon switching, or reward after stage three. Completing stage three gives victory; zero health gives defeat. Results show the weapon, reached/cleared stages, upgrades, outcome, and active simulation time. New runs clear run effects but keep control settings.
+
+| Confirmed source | Authorized prototype effect ID | Adjustable effect |
+| --- | --- | --- |
+| Bóg | `SRC_GOD_03` | After 4 seconds without health damage, +15% outgoing primary damage; health damage restarts the condition |
+| Ojczyzna | `SRC_FATHERLAND_01` | After 0.50 seconds stationary, 20% incoming reduction; movement, dash, and displacement end it |
+| Orzeł Biały w koronie | `SRC_EAGLE_02` | +15% primary reach/range; unchanged cone angle and solid-cover blocking |
+| Szacunek ulicy | `SRC_STREETS_03` | Dash completion grants +15% movement for 2 seconds, with a 3-second cooldown and no cooldown refresh |
+| Fryderyk Chopin | `SRC_CHOPIN_02` | Attack movement becomes rifle 100%, gloves 90%, pillar 55%; no attack/reload timing change or musical playback |
+| Maria Skłodowska-Curie | `SRC_SKLODOWSKA_02` | Each whole Impact pulse adds 2 barrier points, cap 10, and refreshes its 4-second lifetime |
+| Mikołaj Kopernik | `SRC_KOPERNIK_03` | Dash distance 3.6 m over the same 0.30 seconds; preserve invulnerability and swept wall collision |
+
+These selected section 9.3 examples are authorized only for this prototype; the remaining examples and production upgrade quantity stay **Proposed**. All seven work with all three weapons. Curie credit follows section 9.1's normalized primary-opportunity rule: snapshot unmodified damage and target pre-hit health, choose the canonical nearest positive-damage recipient, credit once for an entire cleave, retain fractions, and never credit cosmetic/secondary hits. Therefore a baseline 180-damage column can earn 1.8 credit on a sufficiently healthy target; the historical production 1.5 figure is not this prototype's value. Numeric caps, reductions, and owned-effect ordering remain deterministic.
+
+Checkpoint before each encounter, persist each cleared stage together with its already-rolled pending offer, and commit a selected effect, consumed reward, and next stage together. Closing during combat returns to the latest safe entry; closing during reward selection restores identical choices. Save remaining simulation durations, not wall-clock expiry; menu/settings/hidden-tab time does not progress conditions, cooldowns, barriers, or Impact. Current animation, held input, active attacks/reloads/dash movement, and engine objects are recreated and never serialized. Victory, defeat, and abandonment settle the run once and invalidate its saved checkpoints; settings remain separate. The [TDD milestone 3 persistence boundary](TECHNICAL_DESIGN.md#62-authorized-milestone-3-run-lifecycle-and-persistence) owns storage failure/version/tab handling.
+
+The pillar animation must show a two-handed ready grip, full-body preparation, a wide heavy swing during the existing active window, weight transfer, follow-through, and slow recovery. Animation alone preserves section 6.4's base 33/9/48 ticks, 180 damage, 2.6 m/100-degree area, movement factor, direction lock, and cancellation barrier. An acquired upgrade may modify only its declared field. Cosmetic terminal follow-through may finish after the last enemy dies without advancing combat, damage, run timers, or reward settlement; focus/settings/visibility/confirmation gates still freeze it. Presentation details belong to [Art Design](ART_DESIGN_TEMPLATE.md#23-authorized-milestone-3-procedural-presentation).
+
+Actual checks and limitations belong in [milestone 3 validation](MILESTONE_3_VALIDATION.md). The user reports an earlier Vercel publication and successful current gameplay; neither report supplies a build URL, new physical-controller evidence, final visual approval, or an agent-tested hosted milestone 3 build.
 
 ## 7. Biomes, levels, rooms, and route
 
@@ -354,11 +380,11 @@ The authoritative SFX event inventory, variations, repetition limits, priorities
 
 ## 12. Scope and future playtest plan
 
-Milestones 1–2 have explicit implementation authorization; milestone 3 and later need a separate request. The playable foundation is a validation subset, not a reduction of the confirmed eventual nine-level scope. This design document is not validation evidence; consult the [milestone 2 report](MILESTONE_2_VALIDATION.md) for current results and outstanding checks. Production balance and rights clearance remain unestablished.
+Milestones 1–3 have explicit implementation authorization; milestones 4 and later need a separate request. The short test run is a validation subset, not a reduction of the confirmed nine-level scope. This design document is not validation evidence; consult [milestone 3 validation](MILESTONE_3_VALIDATION.md) for current results and preserve the older reports as historical evidence. Production balance and rights clearance remain unestablished.
 
 | Proposed stage | Content and question to resolve |
 | --- | --- |
-| Technical/combat foundations (TDD milestones 1–3) | First validate one placeholder character/test room and camera/aim/collision, then a first weapon and complete input/remapping flow, then all three weapon definitions and measured cycle damage; these are sequential foundations before the vertical slice |
+| Technical/combat/run foundations (TDD milestones 1–3) | Validate procedural camera/movement/combat/input, then all three weapon definitions and measured baseline damage, then the bounded three-stage/two-reward run and checkpoint foundation; these precede the production vertical slice |
 | Representative vertical slice | B01 with its three levels, three boxer roles, and miniboss; all seven sources represented in a small test pool, one finished art/audio treatment, run failure/suspension/reward flow |
 | Initial content completion | All nine levels, nine proposed ordinary roles, two minibosses, one final boss, and reviewed power-up pool; scope of sample upgrades approved before asset multiplication |
 | Release preparation | Device/browser/accessibility and persistence checks, content/rights review, tuning and performance on approved hardware; hosting/release needs separate authorization |

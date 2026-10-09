@@ -636,7 +636,7 @@ kbd {
 .preparation-card fieldset { border:0; padding:0; margin:20px 0; }
 .preparation-card legend { font-size:10px; font-weight:750; letter-spacing:1.4px; margin-bottom:10px; color:#60706c; }
 .weapon-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
-.round-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+.round-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
 .choice-button { background:#ebe3d1; border:1px solid #9ba99a; border-radius:5px; padding:13px 12px; text-align:left; color:#25484b; min-height:76px; }
 .choice-button[aria-pressed="true"] { background:#234e50; color:#fff2dc; border-color:#234e50; box-shadow:inset 0 0 0 2px #e7bd68; }
 .choice-button strong { display:block; font-size:13px; margin:4px 0; }
@@ -650,6 +650,16 @@ kbd {
 #ammo-status:empty { display:none; }
 #interaction-hint { display:block; font-size:11px; margin-top:10px; color:#efd184; }
 .controls-help { column-gap:10px; row-gap:7px; }
+.reward-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:18px 0; }
+.reward-choice { min-height:145px; }
+.reward-choice>span { display:block; line-height:1.4; letter-spacing:0; }
+.save-status { font-size:11px; line-height:1.5; color:#476a61; margin:12px 0; }
+.menu-upgrades, .run-summary { font-size:12px; line-height:1.55; color:#305455; }
+.menu-upgrades ul, .run-summary ul { padding-left:18px; margin:10px 0; }
+.run-hud { position:absolute; left:24px; bottom:105px; width:520px; max-width:calc(100% - 48px); padding:10px 14px; background:#182c30e8; color:#fff2dc; border:1px solid #c7bc8b40; border-radius:6px; font-size:11px; line-height:1.4; pointer-events:none; }
+.run-hud strong, .run-hud span { display:block; }
+.run-hud span { margin-top:4px; color:#d6d3bd; }
+@media (max-width:800px) { .reward-options { grid-template-columns:1fr; } .reward-choice { min-height:80px; } .run-hud { left:16px; } }
 @media (max-height:800px) {
   .preparation-card { padding:20px 28px; }
   .preparation-card h2 { font-size:30px; }

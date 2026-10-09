@@ -1,5 +1,6 @@
 import { BOXER_RULES, PLAYER_RULES, RIFLE_RULES, ROOM, RULES, WEAPONS } from './config';
 import type { Actions, EnemyState, GameState, HitEvent, Room, SessionMode, Vec2, WeaponId } from './types';
+import { attackMoveFactor, createUpgradeRuntime, effectiveRange, incomingDamageFactor, isUpgradeId, owns, primaryDamageFactor, validatePlayerCarry, type PlayerCarry, type UpgradeId } from './upgrades';
 
 const EPSILON = 1e-9;
 export function clampMovement(v: Vec2): Vec2 {
@@ -93,7 +94,7 @@ export function meleeEligible(origin: Vec2, facing: Vec2, target: { position: Ve
 }
 
 interface EnemyBrain { phaseAge: number; hit: boolean; staggerTicks: number; immunityUntil: number; lastStagger: number; pendingStagger: boolean }
-interface Attack { strike: number; age: number; hitIds: Set<string>; fired: boolean; facing: Vec2; facingLocked: boolean }
+interface Attack { strike: number; age: number; hitIds: Set<string>; fired: boolean; facing: Vec2; facingLocked: boolean; impactCredited: boolean }
 interface Target { id: string; position: Vec2; radius: number; health: number; hitFlash: number }
 
 /** Small deterministic visibility graph around inflated cover; no teleporting AI. */
@@ -176,15 +177,20 @@ export class Simulation {
   private tracerId = 0;
   private visibleEnemies: Set<string> | null = null;
   private brains = new Map<string, EnemyBrain>();
+  private previousPosition: Vec2 | null = null;
+  private healthLostThisTick = false;
+  private barrierRefreshedThisTick = false;
+  private streetTriggeredThisTick = false;
 
-  constructor(private readonly room: Room = ROOM, options: { weapon?: WeaponId; mode?: SessionMode } = {}) {
+  constructor(private readonly room: Room = ROOM, options: { weapon?: WeaponId; mode?: SessionMode; enemySpawns?: readonly Vec2[] } = {}) {
     const weapon = options.weapon ?? 'weapon_02';
     const mode = options.mode ?? 'dummy';
     this.state = {
       time: 0, weapon, sessionMode: mode, outcome: 'playing',
-      player: { position: { x: 0, z: -2.5 }, facing: { x: 0, z: 1 }, radius: RULES.radius, dashRemaining: 0, dashCooldown: 0, invulnerable: false, attackPhase: 'ready', attackProgress: 0, combo: 0, health: PLAYER_RULES.health, maxHealth: PLAYER_RULES.health, hitFlash: 0, hurtRemaining: 0, ammo: weapon === 'weapon_01' ? RIFLE_RULES.magazine : 0, maxAmmo: weapon === 'weapon_01' ? RIFLE_RULES.magazine : 0, reloadRemaining: 0, reloadProgress: 0 },
+      upgrades: createUpgradeRuntime(), effectiveRange: WEAPONS[weapon].range,
+      player: { position: { x: 0, z: -2.5 }, facing: { x: 0, z: 1 }, radius: RULES.radius, dashRemaining: 0, dashCooldown: 0, invulnerable: false, attackPhase: 'ready', attackProgress: 0, combo: 0, health: PLAYER_RULES.health, maxHealth: PLAYER_RULES.health, barrier: 0, hitFlash: 0, hurtRemaining: 0, ammo: weapon === 'weapon_01' ? RIFLE_RULES.magazine : 0, maxAmmo: weapon === 'weapon_01' ? RIFLE_RULES.magazine : 0, reloadRemaining: 0, reloadProgress: 0 },
       dummy: { position: { x: 0, z: 1 }, radius: 0.45, health: 1000, maxHealth: 1000, hitFlash: 0 },
-      enemies: mode === 'encounter' ? BOXER_RULES.spawns.map((position, index) => ({ id: `jabber-${index + 1}`, archetype: 'B01_E01', position: { ...position }, facing: { x: 0, z: -1 }, radius: BOXER_RULES.radius, health: BOXER_RULES.health, maxHealth: BOXER_RULES.health, phase: 'approach', attackProgress: 0, hitFlash: 0, poise: BOXER_RULES.poise, staggerRemaining: 0, staggerImmunity: 0 })) : [],
+      enemies: mode === 'encounter' ? (options.enemySpawns ?? BOXER_RULES.spawns).map((position, index) => ({ id: `jabber-${index + 1}`, archetype: 'B01_E01', position: { ...position }, facing: { x: 0, z: -1 }, radius: BOXER_RULES.radius, health: BOXER_RULES.health, maxHealth: BOXER_RULES.health, phase: 'approach', attackProgress: 0, hitFlash: 0, poise: BOXER_RULES.poise, staggerRemaining: 0, staggerImmunity: 0 })) : [],
       tracers: [], damageTotal: 0, hits: 0, lastDamage: 0,
     };
     for (const enemy of this.state.enemies) this.brains.set(enemy.id, { phaseAge: 0, hit: false, staggerTicks: 0, immunityUntil: 0, lastStagger: -999, pendingStagger: false });
@@ -196,11 +202,51 @@ export class Simulation {
   /** Browser safety transitions discard queued actions, without fast-forwarding paused attacks. */
   clearBufferedActions(): void { this.attackBuffer = -1; this.dashBuffer = -1; this.reloadRequested = false; }
 
+  captureCarry(): PlayerCarry {
+    const player = this.state.player;
+    return {
+      health: player.health, ammo: player.ammo, barrier: player.barrier,
+      dashCooldown: Math.max(0, (this.dashReadyTick - this.tick) * RULES.fixedStep),
+      attackCooldown: Math.max(0, (this.nextAttackTick - this.tick) * RULES.fixedStep, this.reloadTicks * RULES.fixedStep),
+      hurtRemaining: Math.max(0, (this.hurtUntil - this.tick) * RULES.fixedStep),
+      upgrades: structuredClone(this.state.upgrades),
+    };
+  }
+
+  restoreCarry(carry: PlayerCarry): void {
+    if (!validatePlayerCarry(carry) || this.state.weapon !== 'weapon_01' && carry.ammo !== 0) throw new Error('Invalid player checkpoint');
+    const ticks = (seconds: number) => Math.ceil(seconds / RULES.fixedStep - EPSILON);
+    const player = this.state.player;
+    player.health = carry.health; player.ammo = carry.ammo; player.barrier = carry.barrier;
+    this.state.upgrades = structuredClone(carry.upgrades);
+    this.state.effectiveRange = effectiveRange(this.state.upgrades, this.state.weapon);
+    this.attack = null; this.reloadTicks = 0; this.dashTicks = 0;
+    this.nextAttackTick = this.tick + ticks(carry.attackCooldown);
+    this.lastAttackEnd = this.nextAttackTick; this.nextCombo = 0;
+    this.dashReadyTick = this.tick + ticks(carry.dashCooldown);
+    this.hurtUntil = this.tick + ticks(carry.hurtRemaining);
+    player.attackPhase = 'ready'; player.attackProgress = 0; player.combo = 0;
+    player.reloadRemaining = 0; player.reloadProgress = 0; player.dashRemaining = 0;
+    player.dashCooldown = carry.dashCooldown; player.hurtRemaining = carry.hurtRemaining;
+    player.invulnerable = carry.hurtRemaining > 0; player.hitFlash = 0;
+    this.previousPosition = { ...player.position };
+    this.clearBufferedActions();
+  }
+
+  addUpgrade(id: UpgradeId): void {
+    if (!isUpgradeId(id)) throw new Error('Unknown upgrade');
+    if (owns(this.state.upgrades, id)) return;
+    this.state.upgrades.owned.push(id);
+    this.state.effectiveRange = effectiveRange(this.state.upgrades, this.state.weapon);
+  }
+
   step(actions: Actions): HitEvent[] {
     const events: HitEvent[] = [];
     if (this.state.outcome !== 'playing') return events;
     const { player, dummy } = this.state;
-    const weapon = WEAPONS[this.state.weapon];
+    const upgrades = this.state.upgrades;
+    this.healthLostThisTick = false; this.barrierRefreshedThisTick = false; this.streetTriggeredThisTick = false;
+    this.state.effectiveRange = effectiveRange(upgrades, this.state.weapon);
     const move = clampMovement(actions.move);
     const bufferTicks = Math.round(RULES.inputBuffer / RULES.fixedStep);
     this.state.tracers = this.state.tracers.map(tracer => ({ ...tracer, remaining: tracer.remaining - RULES.fixedStep })).filter(tracer => tracer.remaining > 0);
@@ -225,7 +271,7 @@ export class Simulation {
     if (!this.attack && !this.dashTicks && !this.reloadTicks && this.tick >= this.nextAttackTick && (actions.attackHeld || this.attackBuffer >= this.tick)) {
       if (this.tick - this.lastAttackEnd >= Math.round(RULES.comboReset / RULES.fixedStep)) this.nextCombo = 0;
       const strike = this.strike(this.nextCombo);
-      this.attack = { strike: this.nextCombo, age: 0, hitIds: new Set(), fired: false, facing: { ...player.facing }, facingLocked: false };
+      this.attack = { strike: this.nextCombo, age: 0, hitIds: new Set(), fired: false, facing: { ...player.facing }, facingLocked: false, impactCredited: false };
       this.nextAttackTick = this.tick + strike.startup + strike.active + strike.recovery;
       this.attackBuffer = -1;
     }
@@ -247,9 +293,18 @@ export class Simulation {
     const dashing = this.dashTicks > 0;
     player.invulnerable = (dashing && this.dashTicks > Math.round((RULES.dashDuration - RULES.dashInvulnerability) / RULES.fixedStep)) || this.tick < this.hurtUntil;
     const velocity = dashing ? this.dashDirection : move;
-    const speed = dashing ? RULES.dashDistance / RULES.dashDuration : RULES.moveSpeed * (this.attack ? weapon.moveFactor : this.reloadTicks ? RIFLE_RULES.reloadMoveFactor : 1);
+    const speed = dashing ? (owns(upgrades, 'SRC_KOPERNIK_03') ? 3.6 : RULES.dashDistance) / RULES.dashDuration
+      : RULES.moveSpeed * (this.attack ? attackMoveFactor(upgrades, this.state.weapon) : this.reloadTicks ? RIFLE_RULES.reloadMoveFactor : 1)
+        * (upgrades.streetRemaining > 0 ? 1.15 : 1);
     const bodies = this.state.sessionMode === 'dummy' ? (dummy.health > 0 ? [dummy] : []) : this.state.enemies.filter(enemy => enemy.health > 0);
+    const beforeMove = player.position;
     player.position = moveWithCollision(player.position, { x: velocity.x * speed * RULES.fixedStep, z: velocity.z * speed * RULES.fixedStep }, player.radius, this.room, dashing ? undefined : bodies);
+    if (owns(upgrades, 'SRC_FATHERLAND_01')) {
+      const displaced = Math.hypot(player.position.x - beforeMove.x, player.position.z - beforeMove.z) > EPSILON
+        || this.previousPosition !== null && Math.hypot(beforeMove.x - this.previousPosition.x, beforeMove.z - this.previousPosition.z) > EPSILON;
+      upgrades.stationaryTime = dashing || displaced ? 0 : Math.min(0.5, upgrades.stationaryTime + RULES.fixedStep);
+    }
+    this.previousPosition = { ...player.position };
 
     if (this.attack && player.attackPhase === 'active') this.resolveAttack(events);
     if (this.attack) {
@@ -271,7 +326,14 @@ export class Simulation {
       if (player.health <= 0) this.finish('defeat');
       else if (this.state.enemies.every(enemy => enemy.health <= 0)) this.finish('complete');
     }
-    if (this.dashTicks) this.dashTicks--;
+    if (this.dashTicks) {
+      this.dashTicks--;
+      if (this.dashTicks === 0 && owns(upgrades, 'SRC_STREETS_03') && upgrades.streetCooldown === 0) {
+        upgrades.streetRemaining = 2; upgrades.streetCooldown = 3;
+        this.streetTriggeredThisTick = true;
+      }
+    }
+    this.advanceUpgradeTimers();
     this.tick++;
     this.state.time = this.tick * RULES.fixedStep;
     player.dashRemaining = this.dashTicks * RULES.fixedStep;
@@ -280,6 +342,18 @@ export class Simulation {
     player.hitFlash = Math.max(0, player.hitFlash - RULES.fixedStep);
     dummy.hitFlash = Math.max(0, dummy.hitFlash - RULES.fixedStep);
     return events;
+  }
+
+  private advanceUpgradeTimers(): void {
+    const runtime = this.state.upgrades;
+    const reduce = (remaining: number) => remaining <= RULES.fixedStep + EPSILON ? 0 : remaining - RULES.fixedStep;
+    if (owns(runtime, 'SRC_GOD_03') && !this.healthLostThisTick) runtime.noHealthLossTime = Math.min(4, runtime.noHealthLossTime + RULES.fixedStep);
+    if (!this.streetTriggeredThisTick) {
+      runtime.streetRemaining = reduce(runtime.streetRemaining);
+      runtime.streetCooldown = reduce(runtime.streetCooldown);
+    }
+    if (!this.barrierRefreshedThisTick) runtime.barrierRemaining = reduce(runtime.barrierRemaining);
+    if (runtime.barrierRemaining === 0) this.state.player.barrier = 0;
   }
 
   private strike(index: number) {
@@ -296,44 +370,70 @@ export class Simulation {
     const attack = this.attack!;
     const { player, weapon: weaponId } = this.state;
     const weapon = WEAPONS[weaponId];
+    const range = this.state.effectiveRange;
     const candidates = this.targets();
     if (weaponId === 'weapon_01') {
       if (attack.fired) return;
       attack.fired = true;
       player.ammo--;
-      const coverDistance = rayCoverDistance(player.position, attack.facing, weapon.range + 1, this.room);
-      let distance = Math.min(weapon.range, coverDistance);
+      const coverDistance = rayCoverDistance(player.position, attack.facing, range + 1, this.room);
+      let distance = Math.min(range, coverDistance);
       let hit: Target | undefined;
       for (const target of candidates.sort((a, b) => a.id.localeCompare(b.id))) {
         const entry = rayTargetDistance(player.position, attack.facing, target);
         // Range includes its endpoint. Solid cover wins an exact intersection tie.
-        if (entry <= weapon.range + EPSILON && entry < coverDistance - EPSILON && (entry < distance - EPSILON || !hit && entry <= distance + EPSILON)) { distance = entry; hit = target; }
+        if (entry <= range + EPSILON && entry < coverDistance - EPSILON && (entry < distance - EPSILON || !hit && entry <= distance + EPSILON)) { distance = entry; hit = target; }
       }
       this.state.tracers.push({ id: ++this.tracerId, from: { ...player.position }, to: { x: player.position.x + attack.facing.x * distance, z: player.position.z + attack.facing.z * distance }, remaining: RIFLE_RULES.tracerSeconds });
-      if (hit) this.damageTarget(hit, events);
+      if (hit) this.damageTargets([hit], events);
       return;
     }
     if (weaponId === 'weapon_02' && attack.hitIds.size) return;
-    const eligible = candidates.filter(target => !attack.hitIds.has(target.id) && meleeEligible(player.position, attack.facing, target, weapon.range, weapon.halfAngle, this.room));
+    const eligible = candidates.filter(target => !attack.hitIds.has(target.id) && meleeEligible(player.position, attack.facing, target, range, weapon.halfAngle, this.room));
     eligible.sort((a, b) => Math.hypot(a.position.x - player.position.x, a.position.z - player.position.z) - Math.hypot(b.position.x - player.position.x, b.position.z - player.position.z) || a.id.localeCompare(b.id));
-    for (const target of weaponId === 'weapon_02' ? eligible.slice(0, 1) : eligible) this.damageTarget(target, events);
+    this.damageTargets(weaponId === 'weapon_02' ? eligible.slice(0, 1) : eligible, events);
   }
 
-  private damageTarget(target: Target, events: HitEvent[]): void {
+  /** Snapshot canonical credit on the first positive-damage tick, then settle it once. */
+  private damageTargets(targets: Target[], events: HitEvent[]): void {
+    const attack = this.attack!;
+    const snapshots = targets.map(target => ({ target, health: target.health }));
+    let primaryHealth: number | undefined;
+    for (const snapshot of snapshots) {
+      const damage = this.damageTarget(snapshot.target, events);
+      if (damage > 0 && primaryHealth === undefined) primaryHealth = snapshot.health;
+    }
+    if (primaryHealth === undefined || attack.impactCredited) return;
+    attack.impactCredited = true;
+    const runtime = this.state.upgrades;
+    if (!owns(runtime, 'SRC_SKLODOWSKA_02')) return;
+    const credit = Math.min(this.strike(attack.strike).damage, primaryHealth) / 100;
+    const total = runtime.impact + credit;
+    const pulses = Math.floor(total + EPSILON);
+    runtime.impact = Math.max(0, total - pulses);
+    if (pulses) {
+      this.state.player.barrier = Math.min(10, this.state.player.barrier + 2 * pulses);
+      runtime.barrierRemaining = 4;
+      this.barrierRefreshedThisTick = true;
+    }
+  }
+
+  private damageTarget(target: Target, events: HitEvent[]): number {
     const attack = this.attack!;
     const strike = this.strike(attack.strike);
     const liveTarget = target.id === 'dummy' ? this.state.dummy : this.state.enemies.find(enemy => enemy.id === target.id)!;
-    const damage = Math.min(liveTarget.health, strike.damage);
+    const damage = Math.min(liveTarget.health, strike.damage * primaryDamageFactor(this.state.upgrades));
+    if (damage <= 0) return 0;
     liveTarget.health = Math.max(0, liveTarget.health - damage);
     liveTarget.hitFlash = 0.18;
     this.state.damageTotal += damage; this.state.hits++; this.state.lastDamage = damage;
     attack.hitIds.add(target.id);
     events.push({ kind: 'hit', position: { ...liveTarget.position }, damage, id: ++this.hitId, targetId: target.id, source: 'player', weapon: this.state.weapon });
     // The stationary benchmark dummy intentionally has no poise or displacement.
-    if (target.id === 'dummy') return;
+    if (target.id === 'dummy') return damage;
     const enemy = liveTarget as EnemyState;
     const brain = this.brains.get(enemy.id)!;
-    if (enemy.health <= 0) { enemy.phase = 'defeated'; enemy.attackProgress = 0; enemy.staggerRemaining = 0; brain.pendingStagger = false; return; }
+    if (enemy.health <= 0) { enemy.phase = 'defeated'; enemy.attackProgress = 0; enemy.staggerRemaining = 0; brain.pendingStagger = false; return damage; }
     if (this.tick >= brain.immunityUntil && brain.staggerTicks === 0 && !brain.pendingStagger) {
       enemy.poise = Math.max(0, enemy.poise - strike.stagger); brain.lastStagger = this.tick;
       if (enemy.poise === 0) {
@@ -346,6 +446,7 @@ export class Simulation {
       const direction = unit({ x: enemy.position.x - this.state.player.position.x, z: enemy.position.z - this.state.player.position.z });
       enemy.position = moveWithCollision(enemy.position, { x: direction.x * strike.knockback, z: direction.z * strike.knockback }, enemy.radius, this.room, this.state.enemies.filter(other => other !== enemy && other.health > 0));
     }
+    return damage;
   }
 
   private beginStagger(enemy: EnemyState, brain: EnemyBrain): void {
@@ -400,8 +501,12 @@ export class Simulation {
         if (!brain.hit && player.health > 0 && meleeEligible(enemy.position, enemy.facing, player, BOXER_RULES.range, BOXER_RULES.halfAngle, this.room)) {
           brain.hit = true;
           if (!player.invulnerable) {
-            const damage = Math.min(player.health, BOXER_RULES.damage);
+            const reduced = BOXER_RULES.damage * incomingDamageFactor(this.state.upgrades);
+            const absorbed = Math.min(player.barrier, reduced);
+            player.barrier -= absorbed;
+            const damage = Math.min(player.health, reduced - absorbed);
             player.health -= damage; player.hitFlash = 0.2; this.hurtUntil = this.tick + PLAYER_RULES.postHitTicks; player.invulnerable = true;
+            if (damage > 0) { this.state.upgrades.noHealthLossTime = 0; this.healthLostThisTick = true; }
             events.push({ kind: 'hit', position: { ...player.position }, damage, id: ++this.hitId, targetId: 'player', source: 'enemy' });
           }
         }

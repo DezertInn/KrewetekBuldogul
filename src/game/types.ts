@@ -1,3 +1,5 @@
+import type { UpgradeRuntime } from './upgrades';
+export type { UpgradeId, UpgradeRuntime, PlayerCarry } from './upgrades';
 export interface Vec2 { x: number; z: number }
 export interface Obstacle { id: string; x: number; z: number; width: number; depth: number; height: number }
 export interface Room { halfWidth: number; halfDepth: number; obstacles: Obstacle[] }
@@ -34,7 +36,9 @@ export interface GameState {
   weapon: WeaponId;
   sessionMode: SessionMode;
   outcome: 'playing' | 'complete' | 'defeat';
-  player: { position: Vec2; facing: Vec2; radius: number; dashRemaining: number; dashCooldown: number; invulnerable: boolean; attackPhase: AttackPhase; attackProgress: number; combo: number; health: number; maxHealth: number; hitFlash: number; hurtRemaining: number; ammo: number; maxAmmo: number; reloadRemaining: number; reloadProgress: number };
+  upgrades: UpgradeRuntime;
+  effectiveRange: number;
+  player: { position: Vec2; facing: Vec2; radius: number; dashRemaining: number; dashCooldown: number; invulnerable: boolean; attackPhase: AttackPhase; attackProgress: number; combo: number; health: number; maxHealth: number; barrier: number; hitFlash: number; hurtRemaining: number; ammo: number; maxAmmo: number; reloadRemaining: number; reloadProgress: number };
   dummy: { position: Vec2; radius: number; health: number; maxHealth: number; hitFlash: number };
   enemies: EnemyState[];
   tracers: Tracer[];

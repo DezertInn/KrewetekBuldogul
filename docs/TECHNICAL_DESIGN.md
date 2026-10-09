@@ -1,26 +1,28 @@
 # KrewetekBuldogul — Technical Design
 
-Status: milestone 2 implementation authorized on 2026-10-09; broader production architecture remains a design proposal. See the [milestone 2 validation report](MILESTONE_2_VALIDATION.md) for current checks and limitations; [milestone 1 validation](MILESTONE_1_VALIDATION.md) remains historical evidence.
+Status: milestone 3 short-run implementation authorized on 2026-10-10; broader production architecture remains a design proposal. See [milestone 3 validation](MILESTONE_3_VALIDATION.md) for current checks and limitations; [milestone 2](MILESTONE_2_VALIDATION.md) and [milestone 1](MILESTONE_1_VALIDATION.md) remain historical evidence.
 
-Prepared: 2026-10-09.
+Prepared: 2026-10-09; updated 2026-10-10.
 
-Approved prototype stack, continued for milestone 2: **TypeScript + Babylon.js + Vite**; real-time 3D graphics with a fixed isometric/top-down presentation. Production suitability remains subject to measured performance and compatibility.
+Approved prototype stack, continued for milestone 3: **TypeScript + Babylon.js + Vite**; real-time 3D graphics with a fixed isometric/top-down presentation. Production suitability remains subject to measured performance and compatibility.
 
 ## 1. Scope and decision status
 
-This document describes the browser game architecture and distinguishes the authorized prototype from future systems. Milestone 2 extends the existing gym/player/dummy with complete gameplay/menu remapping, local controls/settings profiles, all three weapons, and a repeatable encounter using three basic boxers. It preserves the accepted movement and glove feel. The [GDD milestone 2 override](GAME_DESIGN_TEMPLATE.md#64-authorized-milestone-2-combat-foundation) owns the current adjustable prototype balance and session rules; final production balance remains **Proposed**.
+This document describes the browser game architecture and distinguishes the authorized prototype from future systems. Milestone 3 builds on milestone 2's complete input/settings, three weapons, and basic boxers with a three-stage test run, two stable upgrade choices, safe checkpoints/results, and a heavy procedural pillar swing. It preserves accepted movement and glove feel. The [GDD milestone 2](GAME_DESIGN_TEMPLATE.md#64-authorized-milestone-2-combat-foundation) and [milestone 3](GAME_DESIGN_TEMPLATE.md#65-authorized-milestone-3-short-run-override) overrides own current adjustable gameplay; final production balance remains **Proposed**.
 
-### Milestone 2 implementation boundary
+### Current milestone 3 implementation boundary
 
 | Module | Milestone responsibility |
 | --- | --- |
 | [Simulation types](../src/game/types.ts) and [configuration](../src/game/config.ts) | Plain state/action contracts and editable prototype tuning |
 | [Simulation](../src/game/simulation.ts) | Fixed-step movement/collision/dash, three weapon timelines and damage queries, rifle reload, boxer encounter, health/protection, and deterministic session reset |
+| [Prototype upgrades](../src/game/upgrades.ts) | Seven authorized effect definitions, bounded runtime/carry data and validation; simulation resolves conditions, timers, modifiers, barrier, and normalized Impact |
+| [Run content](../src/run/content.ts), [director](../src/run/director.ts), and [storage](../src/run/storage.ts) | Separate three-stage test-route IDs, seeded stable offers, safe player carry, run/result lifecycle, and versioned transactional checkpoint journal |
 | [Input actions](../src/input/controls.ts) and [settings](../src/input/settings.ts) | Semantic gameplay/menu actions, binding transactions, profiles/calibration, browser-exposed controller input, local settings recovery, and release gates across capture/menu/focus transitions |
-| [Presentation](../src/presentation/scene.ts) | Original procedural gym/hero/weapons/boxers, orthographic camera, dummy, attack/telegraph/reload/health feedback |
-| [Application](../src/main.ts) | Preparation and weapon/mode selection, controls UI, browser lifecycle, pause/retry/results, HUD, and simulation/render integration |
+| [Presentation](../src/presentation/scene.ts) and [pillar poses](../src/presentation/pillar-animation.ts) | Procedural gym/hero/weapons/boxers and feedback; phase-driven heavy swing, articulated two-handed grip, and gameplay-independent terminal follow-through |
+| [Application](../src/main.ts) | Preparation and practice/run selection, controls/reward UI, save-status recovery, browser lifecycle, pause/retry/results, HUD, and simulation/render integration |
 
-Bosses, nine-level content, upgrades/rewards, run progression/checkpoints, production art/audio, and public hosting are deferred. This slice remains silent. Local controls/settings persistence is authorized separately from future run saves. Standard gamepads receive editable defaults; usable nonstandard devices need guided mapping and neutral labels instead of a guessed layout. The [README](../README.md) owns launch commands and current controls. The [milestone 2 validation report](MILESTONE_2_VALIDATION.md) owns actual outcomes, observed performance, and unverified physical-controller combinations; authorization alone is not a claim that a check passed.
+Bosses, the production nine-level content, production art/audio, paid services, and deployment actions remain deferred. This slice stays silent; the seven selected upgrades and three-stage checkpoints do not authorize the full production catalog/campaign. Standard gamepads retain editable defaults; nonstandard devices need guided mapping and neutral labels. The [README](../README.md) owns launch commands and controls. [Milestone 3 validation](MILESTONE_3_VALIDATION.md) owns actual outcomes, performance, and limitations; authorization alone is not a passed check. The user reports an earlier Vercel publication without a URL or agent verification.
 
 **Confirmed** means explicitly required by the project brief. **Proposed** means a recommended starting point requiring design review. **TBD** means intentionally unresolved. Unless identified as confirmed or as an externally documented platform fact, the architecture and budgets below are proposed.
 
@@ -60,7 +62,7 @@ All three engine/framework options can be evaluated without purchasing an engine
 
 ### 2.2 Recommendation and reversal criteria
 
-The user approved **TypeScript + Babylon.js + Vite** for milestone 1 and continued it for milestone 2, with a conventional static web build. This follows the clarified 3D presentation and code-first workflow. Necessary free project dependencies, configuration, source, and validation tools are authorized for this slice; this does not approve production assets or milestone 3 and later.
+The user approved **TypeScript + Babylon.js + Vite** for milestone 1 and continued it through milestone 3, with a conventional static web build. Necessary free project dependencies, configuration, source, and validation tools are authorized for this slice; production assets and milestones 4 and later remain outside scope.
 
 The proposed implementation uses real-time 3D models, materials, lighting, and animation viewed through a fixed orthographic camera. Movement and hit resolution stay on a 2D ground plane; visual height does not imply jumping, free camera rotation, or full 3D physics. This is our technical interpretation of the requested Hades II-style presentation, not a verified description of that game's engine. TypeScript should make data contracts and agent-authored changes reviewable in VS Code.
 
@@ -95,7 +97,7 @@ Example interaction: a bound physical input becomes an Attack action; the simula
 
 Propose a 60 Hz fixed simulation step with rendering independent of simulation frequency. Read current input before the next simulation step; retain edge events until consumed so quick presses are not lost. Limit catch-up work after a long stall; pause on hidden/unfocused gameplay and require explicit resume. A reproducible content seed is useful for debugging, but cross-browser bit-for-bit simulation determinism is not promised.
 
-Milestone 2 keeps the fixed-step simulation, input, presentation, and application boundaries while adding local settings storage and the bounded boxer encounter. It runs at 60 Hz and retains action edges until simulation consumption. Run/upgrade directors, checkpoint storage, and nine-level content remain future systems. The production catch-up target in section 9 remains Proposed; do not scaffold unneeded systems now.
+Milestone 3 keeps simulation, input, presentation, and application boundaries while adding the bounded run director, plain upgrade state, and checkpoint storage. Simulation runs at 60 Hz and retains action edges until consumption. Full nine-level content and generalized production systems remain future work. The production catch-up target in section 9 remains Proposed; do not scaffold unneeded systems.
 
 ## 4. Character, combat, and weapons
 
@@ -129,7 +131,7 @@ The GDD owns the worked sustained-DPS calculation and all numerical attack data.
 
 ### 4.4 Run-upgrade definitions and execution
 
-This subsection remains a production proposal outside milestone 2; do not add upgrade state or reward execution to the combat test.
+The general catalog architecture remains a production proposal. Milestone 3 authorizes only the seven effects and finite rules in [GDD section 6.5](GAME_DESIGN_TEMPLATE.md#65-authorized-milestone-3-short-run-override), implemented as plain data and fixed-step simulation. The remaining sample effects and generalized effect/catalog engine are future work.
 
 Use the [GDD power-up rules](GAME_DESIGN_TEMPLATE.md#9-power-ups-and-build-rules) as the sole authority for the seven sources, sample effects, choices, numerical caps, durations, and stacking. The proposed catalog includes source IDs `SRC_GOD`, `SRC_FATHERLAND`, `SRC_EAGLE`, `SRC_STREETS`, `SRC_CHOPIN`, `SRC_SKLODOWSKA`, and `SRC_KOPERNIK`; effect IDs extend the relevant source ID. The three examples for each source are a design sample, not a final production count.
 
@@ -175,15 +177,27 @@ Propose authored room layouts and the fixed nine-level order, with bounded seede
 
 ## 6. Run lifecycle and persistence
 
-### 6.1 Milestone 2 sessions and local settings
+### 6.1 Practice sessions and independent local settings
 
-The current authorized flow is preparation/settings → select weapon and dummy or boxer mode → play/pause → retry or return to preparation; the boxer test also ends in defeat or encounter completion. Session state is rebuilt on restart and is not saved. Settings survive a page reload when browser storage is available; control reset does not erase unrelated settings.
+Dummy and standalone boxer practice retain the milestone 2 flow: preparation/settings → select weapon/mode → play/pause → retry or return; boxers also end in defeat/completion. Practice sessions are rebuilt on restart and are not saved. The separate run flow is specified below. Settings survive reload when browser storage is available; control reset does not erase unrelated settings.
 
 [Settings storage](../src/input/settings.ts) uses a validated version 2 JSON record in browser `localStorage`, with a separate last-known-good record. It stores named keyboard/mouse and controller profiles, their active selections, controller assignments, calibration, and prompt family. A profile ID is distinct from a transient Gamepad API index. Validate identities, action bindings, essential navigation, same-context conflicts, and numeric ranges before applying a complete transaction. Invalid, incompatible, or unreadable stored data recovers a valid profile or defaults; denied storage leaves usable session-only controls with an accurate status message. Do not claim cross-origin transfer, cloud synchronization, run saves, or support for undocumented older schemas.
 
-### 6.2 Future run lifecycle and persistence proposal
+### 6.2 Authorized milestone 3 run lifecycle and persistence
 
-The following checkpoint/profile architecture is outside milestone 2. Its proposed IndexedDB store does not replace the small current controls/settings record.
+The current run implementation uses [test content](../src/run/content.ts), [RunDirector](../src/run/director.ts), and [RunStorage](../src/run/storage.ts). GDD section 6.5 owns its exact three-stage/two-offer rules and effect values. The director retains selected weapon, safe player carry, run ID/seed/RNG state, stage cursor, active simulation time, cleared-stage IDs, and unique reward records. Completion generates and records an offer once; choosing commits the owned effect and next cursor together. Stable test IDs distinguish this route from the production nine levels.
+
+IndexedDB database `krewetek-buldogul-m3-runs` contains a single `journal` state updated in one read/write transaction. The journal stores current and previous safe checkpoints, monotonically increasing revision, settled-run tombstones, and a tab lease. Envelopes include schema version `1`, content version `m3-gym-run-v1`, and build ID `m3-prototype-1`; runtime validation rejects invalid IDs, values, phases, ownership, and reward relationships before resuming. Supported current records can recover a valid previous revision. Unsupported schema/content/database versions are preserved; no undocumented migration or export/import UI is claimed.
+
+Save before starting combat, after clearing a stage with its pending rolled offer, and after the committed choice/next entry. An abrupt combat close resumes the previous entry without active hit/reload/dash/input state. A reward reload preserves identical choices and cannot duplicate ownership. Serialize fractional Impact and remaining cooldown/buff/protection durations; wall-clock absence and paused UI do not advance them. Finished/abandoned runs settle idempotently by run ID, invalidate both saved revisions for that run, and preserve the independent localStorage settings profiles.
+
+The lease/revision check blocks silent writes from another tab; an explicit takeover transfers ownership of an active saved run. Empty journal reads do not claim a lease or block practice/settings in another tab; first checkpoint creation acquires ownership atomically. A sessionStorage tab ID survives reload, while a document-lifetime exclusive Web Lock makes a duplicated tab with copied sessionStorage acquire a different ID. Reload recovery therefore does not depend on an unload transaction completing. If Web Locks or session identity are unavailable, unique document ownership and explicit takeover remain the safe fallback. Save status exposes unavailable/quota/write failures, conflicts, corrupt recovery, and unsupported records. Temporary play remains available without claiming that progress is saved. Database/origin changes do not transfer saves, including localhost, Vercel preview, and production domains. Cloud sync, account services, anti-cheat, and generalized profile progression remain outside the prototype.
+
+The view consumes phase/progress and HitEvents only. Its heavy swing keeps exact grip contacts using articulated limbs and continuous phase poses; it never changes hit queries. `render(state, events, dt, cosmeticDt = 0)` allows cosmetic active/recovery to finish after a terminal pillar hit. Completion and checkpoint settlement happen immediately; the opaque menu is revealed after the visible follow-through, and invisible choices cannot consume confirmation input. Only that cosmetic clock may advance after completed gameplay; the application passes zero while hidden, unfocused, in settings, or confirming an action. New sessions/stages and equipment changes clear cosmetic state. The debug-only pose snapshot exposes rendered hand/grip contacts for browser verification.
+
+### 6.3 Future production run lifecycle and persistence proposal
+
+The following broader checkpoint/profile architecture remains a production proposal beyond the bounded milestone 3 implementation above. Separate run storage never replaces the small controls/settings record.
 
 Proposed flow: boot → title/settings → choose one weapon → load the starting level/room → encounter and objective progression → room transition or level completion → applicable upgrade choice → next level/biome → defeat/completion → results → preparation. The GDD proposes eight level-exit upgrade choices before the final level, with no upgrade at run start; choice generation must follow that rule rather than awarding one at every room. A separate hub and narrative conversations are not implied by this flow.
 
@@ -239,7 +253,7 @@ Browsers expose gamepad state and connection events; an already connected contro
 
 The API's `mapping` field identifies whether a known layout is supplied. Use standard layout semantics when available; otherwise offer guided mapping and neutral button/axis labels. [MDN mapping](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad/mapping)
 
-Required milestone 2 behavior for the authorized input/lifecycle features below; haptics and public hosting remain future scope:
+Required input/lifecycle behavior carried from milestone 2 into milestone 3; haptics and new deployment actions remain outside current implementation scope:
 
 - Require HTTPS in production, feature-detect gamepad availability, and offer a clear input diagnostic view. Embedded hosts must also allow the gamepad feature. [MDN Gamepad API](https://developer.mozilla.org/en-US/docs/Web/API/Gamepad_API)
 - Pause and clear held actions when the active controller disconnects or the game loses focus. Keep menus usable on another device. Reconnection must not fire the action used to reconnect; require explicit resume.
@@ -260,7 +274,7 @@ Propose native HTML controls for settings and other text-heavy menus where pract
 
 Provide UI scaling, high-contrast focus, cues that do not rely solely on color, separate Master/Effects/UI/Ambience levels, readable subtitles if dialogue is added, and reduced screen shake/flashing. Every attack telegraph, upgrade trigger, reload state, and boss vulnerability needs a visual equivalent when sound is muted. Aim assistance, difficulty assists, and game-speed options remain GDD proposals requiring review and playtesting across input devices. Store preference changes separately from run state.
 
-The [art design draft](ART_DESIGN_TEMPLATE.md) specifies the original modern Polish urban direction, character/scarf treatment, three environment kits, and weapon/enemy/boss presentation. Detailed specifications and budgets remain proposals awaiting validation. Milestone 2 permits original procedural weapon/boxer geometry, animations, cues, and UI for this slice; current visuals are not an accepted production target. Production assets remain outside authorization. Proposed future asset pipeline:
+The [art design draft](ART_DESIGN_TEMPLATE.md) specifies the original modern Polish urban direction, character/scarf treatment, three environment kits, and weapon/enemy/boss presentation. Detailed specifications and budgets remain proposals awaiting validation. Milestone 3 continues procedural geometry/cues/UI and adds the heavy pillar animation and run/reward presentation; current visuals are not an accepted production target. Production assets remain outside authorization. Proposed future asset pipeline:
 
 1. Keep editable source assets separate from runtime exports. Use stable asset IDs and lowercase descriptive filenames; never couple narrative names to save IDs.
 2. Use the art document's proposed units, axis/handedness conversion, origin points, rigs, clip names, attachment sockets, material conventions, and attack cue readability before volume production. Combat timing remains simulation-owned: attack start/active/recovery/cancel/reload events drive animation state and optional sound/VFX. Retiming a clip cannot move a damage window or ammo refill. If an accepted modifier changes attack speed, derive both gameplay and presentation from the same scaled timeline. Animation blending, a skipped render frame, or replayed visual markers must not duplicate events. Cosmetic scarf motion and the pillar's exaggerated silhouette never enlarge collision or create independent damage.
@@ -297,7 +311,7 @@ Define a reproducible stress encounter from the proposed GDD roster and compatib
 
 ## 10. Validation and compatibility matrix
 
-Milestone 2 requires type checking, meaningful simulation/input/settings tests, a production build, and actual installed Chrome/Edge checks. Reuse the earlier lockfile-install evidence when dependencies are unchanged; revalidate installation if they change. Exercise all weapon timelines/hits/reloads and measured DPS, boxer telegraphs/damage/protection/defeat/reset, the actual rebinding UI and recovery, settings failures, prompts/device selection, focus/disconnect safety, and resize. Inspect rendered screenshots/animations and record runtime/asset errors, performance conditions, and limitations in [milestone 2 validation](MILESTONE_2_VALIDATION.md). The broader table below also includes future systems; it is an acceptance plan, not a list of completed checks.
+Milestone 3 requires type checking, meaningful simulation/upgrade/run/storage/input/settings/animation tests, a production build, and actual installed Chrome/Edge checks. Reuse earlier lockfile-install evidence when dependencies are unchanged; revalidate if changed. Exercise complete runs with each weapon, both upgrade choices, safe-entry and pending-offer reloads, idempotent settlement, failures/versions/tab conflicts, preserved weapon benchmarks, and existing remapping/focus safety. Inspect pillar phase sequences and actual grip contacts, including last-enemy completion, eight facings, and 1280×720/1920×1080. Record errors, screenshots/animation inspection, measured conditions, and limitations in [milestone 3 validation](MILESTONE_3_VALIDATION.md). The broader table below includes future systems and is an acceptance plan, not completed evidence.
 
 | Layer | High-value validation |
 | --- | --- |
@@ -333,9 +347,9 @@ Automated browser tests can exercise synthetic actions and menu flows, but they 
 
 The authorized prototypes use a reproducible Vite static build, exact dependency versions and lockfile, type checks, game-rule/input/settings tests, a production build check, and browser tests. The [README](../README.md#run-locally) documents install, development, checks, and preview commands. Ordinary development needs no separate scene editor. Serve bundled dependencies and hashed build assets without a runtime CDN. Settings schema compatibility and future save/content compatibility remain separate from cache versions.
 
-**Proposed first host: GitHub Pages** for a static browser build; it serves HTML, CSS, and JavaScript from a repository and is available for public repositories on GitHub Free. [GitHub Pages documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
+**User-reported current host: Vercel.** The user reports the earlier build was published and works as expected. No URL, hosting settings, deployed commit, or hosted milestone 3 check has been supplied. The historical first-host proposal was GitHub Pages; it was a recommendation, not a verified deployment. [GitHub Pages documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
 
-Use `Dev` for ongoing work and reviewed promotion to `Main` for a release candidate, following [collaboration workflow](COLLABORATION.md). Milestone 2 ends with a pushed `Dev` commit and an update to existing review PR #2 against `Main`, left unmerged with `Dev` active/default. A later deployment workflow could publish build artifacts from reviewed `Main` without adding a permanent branch; configure the actual repository subpath and test deep asset URLs then. Milestone 2 permits local development/preview and a build artifact only: no public deployment or hosting workflow is authorized.
+Use `Dev` for ongoing work and reviewed promotion to `Main`, following [collaboration workflow](COLLABORATION.md). Milestone 3 continues validated `Dev` commit/push and existing review PR #2 against `Main`, left unmerged with `Dev` active/default. Current implementation permits local servers and build artifacts; publishing a new build or changing hosting is not authorized by this milestone. The reported Vercel project may have its own Git integration; its settings and automatic deployment behavior have not been verified.
 
 Prefer first-party HTTPS hosting for the first compatibility pass. Embedded distribution is a later test target because focus, controller permissions, storage, and fullscreen behavior may differ. If Godot with threads is selected, reassess the host's cross-origin isolation support before choosing that export mode. Keep production saves distinct from development origins; do not promise automatic transfer between them.
 
@@ -361,8 +375,8 @@ PWA/offline caching, custom domains, analytics, and remote services need separat
 | 0 — Design baseline | Populated game/art drafts and aligned technical/supporting documents; exact content scope, measurable weapon benchmark, seven-source sample system, no-music direction, and unresolved decisions |
 | 1 — Authorized technical slice | One procedural gym room/player, movement/aim/dash/collision, boxing-glove attacks and dummy, initial keyboard/mouse and standard gamepad actions, safe start/pause/restart; type checks, simulation/input tests, build, lockfile install, browser smoke, observed performance. Record unavailable physical-controller/browser checks explicitly; they remain pending rather than blocking independently verifiable work |
 | 2 — Authorized input and combat foundation | Complete gameplay/menu action mapping, rebinding/recovery and versioned local settings; three weapon behaviors with the GDD section 6.4 simulation benchmark; preserved accepted feel; pause/disconnect/focus robustness; repeatable basic-boxer encounter plus dummy mode; actual browser UI/combat checks and separately pending physical hardware tests |
-| 3 — Run and content foundation | Distinct biome/level/room/encounter data with the nine-level configuration; versioned safe checkpoints, upgrade definitions/order/weighted triggers, stable reward offers, transitions, results, and failure recovery |
+| 3 — Authorized short-run foundation | Three separate test stages in the existing gym, two stable three-option rewards from seven defaults, carry/results/reset, versioned safe checkpoints and failure/tab recovery, heavy procedural pillar swing, and validation; the full nine-level route remains later production work |
 | 4 — Representative vertical slice | The GDD's proposed playable subset with original 3D art and non-musical audio; selected upgrades and a major encounter; measured stress, loading, and controller results against the acceptance targets |
 | 5 — Production and release preparation | Complete the confirmed nine levels, two minibosses, and final boss; agree the final upgrade count separately from samples; balance/accessibility passes; validate saves/hosting; review release candidate from `Dev` into `Main` |
 
-Milestones 1 and 2 are authorized; milestones 3–5 need a later implementation request. Re-estimate production after design review and measured prototype results; proposed art specifications, baseline hardware, browser versions, and final tuning still need validation. Consult [milestone 2 validation](MILESTONE_2_VALIDATION.md) for current evidence and [milestone 1 validation](MILESTONE_1_VALIDATION.md) for history. Arithmetic, simulation output, automated input, browser checks, physical hardware, and rights clearance remain distinct categories.
+Milestones 1–3 are authorized; milestones 4–5 need a later implementation request. Re-estimate production after design review and measured results; proposed art specifications, baseline hardware, browser versions, and final tuning still need validation. Consult [milestone 3 validation](MILESTONE_3_VALIDATION.md) for current evidence and the separate [milestone 2](MILESTONE_2_VALIDATION.md)/[milestone 1](MILESTONE_1_VALIDATION.md) historical reports. Arithmetic, simulation output, automated input, browser checks, physical hardware, user hosting reports, and rights clearance remain distinct.

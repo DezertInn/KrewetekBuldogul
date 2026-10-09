@@ -4,9 +4,9 @@ An action roguelite set in an exaggerated contemporary Polish urban world, with 
 
 [Public repository](https://github.com/DezertInn/KrewetekBuldogul) · [Open review PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2)
 
-**Current phase: milestone 2 input and combat foundation.** The TypeScript + Babylon.js + Vite prototype has one procedural gym, one fictional scarf-wearing hero, three selectable weapons, dummy practice, and a repeatable encounter with three basic boxers. Gameplay/menu controls are customizable, with local profiles, calibration, and recovery. See [milestone 2 validation](docs/MILESTONE_2_VALIDATION.md) for actual checks and limitations; [milestone 1 validation](docs/MILESTONE_1_VALIDATION.md) preserves earlier evidence.
+**Current phase: milestone 3 short-run foundation, authorized 2026-10-10.** The TypeScript + Babylon.js + Vite prototype adds a three-stage gym run, two choices of one upgrade from three offers, browser-local safe checkpoints, and run results to the existing dummy and boxer modes. A procedural two-handed pillar swing adds visible preparation, whole-body contact, and follow-through. Gameplay/menu controls remain customizable. See [milestone 3 validation](docs/MILESTONE_3_VALIDATION.md) for current checks and limitations; [milestone 2](docs/MILESTONE_2_VALIDATION.md) and [milestone 1](docs/MILESTONE_1_VALIDATION.md) preserve earlier evidence.
 
-This is a bounded combat test. The nine-level campaign, bosses, power-ups/rewards, run progression/saves, production assets/audio, and public deployment remain future work. The prototype is silent. Current colors, textures, character design, and animation treatment are placeholders, not approved production art.
+The three test stages reuse the gym and basic boxers; they do not implement the confirmed nine-level campaign. Bosses, additional biomes, production assets/audio, and paid services remain future work. The prototype is silent and uses procedural placeholders. The user reports that the earlier build is published on Vercel and works as expected; no deployment URL or hosted-build verification has been supplied for milestone 3.
 
 ## Run locally
 
@@ -17,9 +17,19 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-Open **http://127.0.0.1:5173/** in desktop Chrome or Edge. Choose a weapon and **Dummy practice** or **Boxer encounter**, then **Begin training**. All three weapons are available immediately; one stays equipped throughout a round. No separate engine editor or game account is required. Keep the terminal running; **Ctrl+C** stops the server.
+Open **http://127.0.0.1:5173/** in desktop Chrome or Edge. Choose a weapon and **Dummy practice**, **Boxer encounter**, or **Gym run · M3**, then start. All three weapons are available immediately; one stays equipped throughout a round or run. **Resume saved run** restores the last safe checkpoint when one is available. No separate engine editor or game account is required. Keep the terminal running; **Ctrl+C** stops the server.
 
 Use `npm.cmd` in Windows PowerShell if its script policy blocks `npm.ps1`; no policy change is needed. Fully restart VS Code after installing Node if the terminal cannot find it. Other desktop systems use the usual `npm` command but remain later validation targets.
+
+This workstation currently uses the portable Node.js runtime in ignored `.npm-cache/runtime/node-v24.21.0-win-x64/`; `node` is not on the default terminal path. To use that already-installed runtime in a PowerShell session:
+
+```powershell
+$taskNodeBin = Join-Path (Get-Location) '.npm-cache/runtime/node-v24.21.0-win-x64'
+$env:Path = $taskNodeBin + ';' + $env:Path
+npm.cmd run dev
+```
+
+That ignored runtime is local setup, not a checked-in project dependency; another checkout needs its own supported Node installation.
 
 Run `npm.cmd ci` for the initial locked installation or when dependencies change; reuse the installed dependencies for ordinary development. Use `npm.cmd install` only for intentional dependency changes and review the lockfile.
 
@@ -27,7 +37,7 @@ Run `npm.cmd ci` for the initial locked installation or when dependencies change
 | --- | --- |
 | `npm.cmd run dev` | Local development at `http://127.0.0.1:5173/` |
 | `npm.cmd run typecheck` | TypeScript validation |
-| `npm.cmd test` | Simulation, input, and settings tests |
+| `npm.cmd test` | Simulation, upgrades, run/storage, animation, input, and settings tests |
 | `npm.cmd run build` | Type check and production build into ignored `dist/` |
 | `npm.cmd run preview` | Serve the existing build at `http://127.0.0.1:4173/` |
 | `npm.cmd run test:browser` | Playwright checks in installed Chrome and Edge |
@@ -41,8 +51,11 @@ Build before previewing or running browser tests. Browser tests start or reuse l
 - **Pillar:** slow committed sweep that can hit several eligible targets once each.
 - **Dummy practice:** inspect reach, attack timing, damage totals, and reload behavior without enemy pressure.
 - **Boxer encounter:** dodge visible preparations, counter during recovery, and defeat the fixed three-boxer group. Player defeat and encounter completion offer retry or return to preparation.
+- **Gym run · M3:** clear three test formations while carrying health, ammunition, the selected weapon, and acquired effects forward. After stages one and two, choose one of three distinct unowned upgrades. The seven-entry prototype pool contains one effect from each confirmed source; exact IDs and adjustable values belong in [GDD section 6.5](docs/GAME_DESIGN_TEMPLATE.md#65-authorized-milestone-3-short-run-override).
 
 Pause to resume, restart, change weapon/round, or open settings. Restarting or changing preparation during a live round requires confirmation; it clears combat state while preserving controls. Interact at the preparation station to open the paused session menu. Weapons cannot be switched during combat.
+
+Run checkpoints are saved before encounters and with cleared-stage reward offers, then after committing a choice. Closing during combat restores the prior safe entry; pending offers keep the same choices. Run effects and remaining simulation-time durations survive these boundaries. Victory, defeat, or abandonment settles the run once; starting another run resets combat upgrades while preserving control profiles. Save status reports unavailable/incompatible storage and tab conflicts. Explicit takeover or temporary play keeps a second tab from silently overwriting the saved run. There is no mid-attack save, cloud synchronization, or automatic localhost-to-Vercel transfer.
 
 The user accepted the refined movement, glove reach, and punch speed. [GDD section 6.4](docs/GAME_DESIGN_TEMPLATE.md#64-authorized-milestone-2-combat-foundation) preserves that feel and defines adjustable prototype sustained single-target targets of **120 / 120 / 108 DPS for gloves / pillar / rifle**. Actual measured results belong in the validation report; burst damage, pillar crowd damage, and practical encounter effectiveness are separate from this benchmark. Final production balance remains open.
 
@@ -83,7 +96,7 @@ Open **Controls and settings** from preparation or pause. Keyboard, pointer, and
 
 Keyboard profiles explicitly choose **physical key position** or **character on the current layout**. Changing semantics converts the whole profile; verify the displayed bindings, especially when browser keyboard-layout access is unavailable and Latin fallback labels are used. Pointer aiming is absolute world targeting; aim sensitivity adjusts stick response.
 
-Settings use validated version 2 browser-local records plus a last-known-good backup. Profile reset preserves unrelated preferences. Invalid/incompatible data recovers a usable profile; unavailable storage leaves session-only controls and reports that limitation. Data belongs to this browser origin, so another browser, host, or port has separate settings. Clearing browser storage can remove it. Combat sessions are not saved.
+Settings use validated version 2 browser-local records plus a last-known-good backup. Profile reset preserves unrelated preferences. Invalid/incompatible data recovers a usable profile; unavailable storage leaves session-only controls and reports that limitation. Settings and IndexedDB run checkpoints are separate records. Data belongs to this browser origin, so another browser, host, or port has separate settings and saves. Clearing browser storage can remove both. Dummy and individual boxer practice sessions are not saved.
 
 Nonstandard controllers use neutral button/axis labels and require guided mapping or explicit **Use this profile for this controller** before gameplay. Only browser-exposed inputs can be captured; reserved system buttons, motion sensors, touchpad gestures, and rumble are not mapped. Left-click activates visible UI controls; a mapped left-click menu action works on the menu background. Verify an unfamiliar controller in preparation before combat.
 
@@ -107,19 +120,20 @@ Documents distinguish **Confirmed** requirements, authorized adjustable prototyp
 | Document | Purpose |
 | --- | --- |
 | [Technical design](docs/TECHNICAL_DESIGN.md) | Architecture, input/storage, scope boundaries, compatibility, future milestones |
-| [Milestone 2 validation](docs/MILESTONE_2_VALIDATION.md) | Current checks, measured damage/performance, limitations, manual checklist |
+| [Milestone 3 validation](docs/MILESTONE_3_VALIDATION.md) | Current run/save/upgrade/animation checks and limitations |
+| [Milestone 2 validation](docs/MILESTONE_2_VALIDATION.md) | Historical input/combat checks, damage/performance, manual checklist |
 | [Milestone 1 validation](docs/MILESTONE_1_VALIDATION.md) | Historical prototype/refinement evidence |
 | [Game design](docs/GAME_DESIGN_TEMPLATE.md) | Authoritative gameplay, tuning, content IDs, and production proposals |
 | [Art and audio design](docs/ART_DESIGN_TEMPLATE.md) | Presentation, open visual comparisons, procedural boundary, future assets/audio |
 | [Decision register](docs/DECISIONS_AND_OPEN_QUESTIONS.md) | Requirements, authorizations, accepted feel, open production decisions |
 | [Collaboration](docs/COLLABORATION.md) and [agent instructions](AGENTS.md) | Setup/access status, branch workflow, authorized work |
 
-`src/game/` owns simulation/tuning, `src/input/` owns actions/settings/editor, `src/presentation/` builds the procedural scene, and `src/main.ts` integrates sessions/HUD. `tests/` covers rules, input/settings, and browser behavior; `docs/` owns design and evidence. Original `_TEMPLATE.md` filenames remain for stable links. `assets/` is reserved for later authorized production work. Dependencies, builds, browser reports, credentials, and private local data are excluded from commits.
+`src/game/` owns simulation/tuning and upgrade effects, `src/run/` owns the test route, run lifecycle, and checkpoint journal, `src/input/` owns actions/settings/editor, `src/presentation/` builds the procedural scene and pillar poses, and `src/main.ts` integrates sessions/HUD. `tests/` covers rules, run/storage, input/settings, animation, and browser behavior; `docs/` owns design and evidence. Original `_TEMPLATE.md` filenames remain for stable links. `assets/` is reserved for later authorized production work. Dependencies, builds, browser reports, credentials, and private local data are excluded from commits.
 
 ## Development and next steps
 
-Work on exact-case **Dev**, the local working and GitHub default branch. **Main** holds reviewed baselines. Milestone 2 authorizes validated commits/pushes to Dev and updates to existing [PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2); leave it unmerged and Dev active/default. Preserve unrelated work and coordinate file ownership; one agent manages the shared Git index and remote writes. [Collaboration status](docs/COLLABORATION.md) records the separately pending collaborator invitation.
+Work on exact-case **Dev**, the local working and GitHub default branch. **Main** holds reviewed baselines. Milestone 3 continues the validated commit/push and existing [PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2) workflow; leave it unmerged and Dev active/default. Preserve unrelated work and coordinate file ownership; one agent manages the shared Git index and remote writes. [Collaboration status](docs/COLLABORATION.md) records the separately pending collaborator invitation.
 
-Next, manually compare all three weapons, verify rebinding/recovery and DualShock USB safety, and review the [proposed visual choices](docs/ART_DESIGN_TEMPLATE.md#21-proposed-visual-review-after-milestone-1): palette, proportions, surface treatment, and animation character. Feel acceptance has not selected those alternatives. Milestone 3's run/content foundation requires a later explicit request; production assets/audio, paid services, public deployment, and merging Main remain outside current authorization.
+Next, validate the complete short run with each weapon, pending-offer reloads, safe-entry recovery, and the heavy pillar swing, then collect player feedback. Continue physical controller coverage and review the [proposed visual choices](docs/ART_DESIGN_TEMPLATE.md#21-proposed-visual-review-after-milestone-1). Milestone 4 would add the first complete biome and its miniboss with separately approved art/audio; production assets, paid services, publishing a new build, and merging Main still require their own authorization.
 
 Project licensing and targeted production rights questions remain TBD; no third-party asset rights are granted by this repository.

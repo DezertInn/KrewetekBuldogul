@@ -2,13 +2,13 @@
 
 **Document status:** Populated design draft v0.1. Creative requirements are confirmed; detailed production choices await review.
 
-**Prepared:** 2026-10-09. **Art approval owner:** TBD. Milestone 2 continues separately authorized original procedural placeholders; no production assets are approved.
+**Prepared:** 2026-10-09; updated 2026-10-10. **Art approval owner:** TBD. Milestone 3 continues separately authorized original procedural placeholders and adds a heavy pillar swing; no production assets are approved.
 
 ## 1. Scope and status
 
 **Confirmed** identifies the user's requirements. **Proposed** identifies recommendations, including every new name, palette, dimension, asset budget, animation treatment and production method below. **TBD** identifies a decision needing further input. Unless a paragraph or table explicitly says Confirmed, it describes a Proposed starting point.
 
-This document owns presentation, audio direction and asset specifications. [Game Design](GAME_DESIGN_TEMPLATE.md) owns narrative, abilities, attack timings, power-up effects, enemy behavior and balance. [Technical Design](TECHNICAL_DESIGN.md) owns architecture, global performance targets and compatibility. Shared decisions and the prioritized questions live in [Decisions and Open Questions](DECISIONS_AND_OPEN_QUESTIONS.md). The user separately authorized milestone 2's original procedural weapons, boxers, animations, cues, and UI. This does not authorize production assets, audio, or milestone 3 and later.
+This document owns presentation, audio direction and asset specifications. [Game Design](GAME_DESIGN_TEMPLATE.md) owns narrative, abilities, attack timings, power-up effects, enemy behavior and balance. [Technical Design](TECHNICAL_DESIGN.md) owns architecture, global performance targets and compatibility. Shared decisions and prioritized questions live in [Decisions and Open Questions](DECISIONS_AND_OPEN_QUESTIONS.md). Milestone 3 authorizes procedural run/reward/results UI and a heavy pillar animation alongside the existing gym/weapons/boxers. Production assets/audio and milestones 4 and later remain outside scope.
 
 | Area | Confirmed creative requirement |
 | --- | --- |
@@ -19,7 +19,7 @@ This document owns presentation, audio direction and asset specifications. [Game
 | Power-up sources | Exactly seven: Bóg, Ojczyzna, Orzeł Biały w koronie, Szacunek ulicy, Fryderyk Chopin, Maria Skłodowska-Curie, Mikołaj Kopernik. |
 | Sound | Pleasant, cartoonish sound effects. No music, including musical reward stingers or Chopin recordings. |
 | Input and delivery | Remappable gameplay and menu actions for keyboard/mouse, DualShock 4 and Xbox One/Series; USB/Bluetooth validation on compatible hardware. Windows desktop browsers first; other desktop systems later. |
-| Workflow | Free tools and code-first development through Codex in VS Code. TypeScript + Babylon.js + Vite and necessary free project/test tooling continue for milestone 2; production assets remain outside authorization. |
+| Workflow | Free tools and code-first development through Codex in VS Code. TypeScript + Babylon.js + Vite and necessary free project/test tooling continue for milestone 3; production assets remain outside authorization. |
 
 ## 2. Visual direction
 
@@ -67,6 +67,16 @@ The reference brief is conceptual only: Hades/Hades II for composition and clari
 | Audio | Remain silent. No sound production, music, musical stingers, or recordings are part of this milestone. Essential information is visual. |
 
 GDD [section 6.4](GAME_DESIGN_TEMPLATE.md#64-authorized-milestone-2-combat-foundation) owns weapon/encounter timing and balance. Animation and VFX consume those states/events; they cannot add a hit, shorten recovery, refill ammunition early, or change collision. [Milestone 2 validation](MILESTONE_2_VALIDATION.md) records actual screenshot/animation checks and limitations separately from art acceptance.
+
+### 2.3 Authorized milestone 3 procedural presentation
+
+**Confirmed for the prototype, 2026-10-10:** keep the original gym, fictional scarf-wearing hero, existing boxers, and three weapon identities. Show the three-stage test run, current stage/outcome, health/ammunition/barrier, acquired effect descriptions, pending choices, and honest save/recovery status. Reward and result actions must remain usable through current keyboard, pointer, and remapped controller menu bindings; entering menus releases held combat actions. Use source text/simple procedural presentation rather than generating production icons/assets. No sound or music is added.
+
+The pillar uses an explicit two-handed grip with both hands attached to the shaft wraps. Preparation visibly turns hips and shoulders and lowers the body into a braced stance. The active swing moves the column across the body with coordinated arms, weight transfer, and readable silhouette; follow-through settles the heavy object before the slower reset. Independent torso motion and articulated arms/legs may extend the procedural rig. Interpolate poses continuously across startup/active/recovery and restore a coherent ready pose after cancellation, equipment change, or new stage.
+
+GDD [section 6.5](GAME_DESIGN_TEMPLATE.md#65-authorized-milestone-3-short-run-override) owns this override and preserves base combat timings/damage/range. Decorative mesh extents never grant reach or determine hit timing. Reach/cone/target feedback uses effective gameplay range after a declared upgrade. After a final killing hit, combat ends and the run/director/checkpoint settles immediately; the full-arena reward/results overlay stays hidden while the remaining cosmetic swing and recovery finish, preserving their visibility. Hidden choices do not consume confirmation input. Settings and Back/discard remain explicit menu actions; settings, confirmations, hide/focus loss freeze the cosmetic clock. Blur reveals the menu while the animation is frozen; returning to the unobscured finisher resumes only its cosmetic clock. The ordinary reward/results menu appears after the cosmetic pose returns to ready. This presentation delay never delays save/reward settlement or advances gameplay/run timers.
+
+Review phase sequences, misses/hits/cleave, repeated swings, movement, dash cancellation, pause/resume, and last-enemy completion at the actual orthographic camera distance. Inspect eight facings at 1280×720 and 1920×1080 and actual rendered hand-to-grip contacts. [Milestone 3 validation](MILESTONE_3_VALIDATION.md) records checks and limitations; passing procedural readability checks does not select production palette, proportions, materials, assets, or final animation style. A later milestone 4 may develop the first complete biome/miniboss and separately approved art/audio.
 
 ## 3. Camera and composition
 
@@ -266,7 +276,7 @@ Load lightweight UI for all three weapon choices, then the shared hero, selected
 
 ## 13. Prioritized asset inventory
 
-These are future production specifications, not produced assets. Milestone 2 authorizes only the original procedural presentation in section 2.2. After separate production authorization, **P0** validates the pipeline, **P1** covers initial content, **P2** is optional polish needing review. The production inventory below is not authorization to build it now.
+These are future production specifications, not produced assets. Current milestone 3 authorization covers only the procedural presentation in sections 2.2–2.3. After separate production authorization, **P0** validates the pipeline, **P1** covers initial content, **P2** is optional polish needing review. The production inventory below is not authorization to build it now.
 
 | Priority / inventory ID | Deliverable and content mapping | Approval criterion |
 | --- | --- | --- |
