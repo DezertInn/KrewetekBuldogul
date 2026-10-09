@@ -8,7 +8,7 @@ Verification date: 2026-10-09 (Europe/Warsaw).
 | --- | --- |
 | Local workspace | Existing `KrewetekBuldogul` workspace reused; documentation and engine-neutral directories prepared |
 | Codex context | This task works directly in the project directory; no separate cloud project or cross-account access has been verified |
-| Local Git | Initialized with `Dev` as the unborn working branch; first commit and `Main` creation pending final document review |
+| Local Git | Planning baseline committed on local `Main` and `Dev`; `Dev` is the working branch. Both branches contain the reviewed baseline; no remote is configured |
 | Git tooling | An official portable Git tool was provisioned outside the repository for setup; Git is not installed on the normal command path |
 | Public GitHub repository | Owner requested as the account currently signed into VS Code; that GitHub username and authenticated access have not yet been verified; no repository URL verified |
 | Remote `Main` and `Dev` | Pending repository publication |
