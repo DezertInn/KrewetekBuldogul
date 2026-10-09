@@ -1,0 +1,26 @@
+# Local credentials and machine-specific data
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.aws/
+.codex/
+.agents/
+.vscode/
+.idea/
+
+# OS/editor scratch files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.log
+*.tmp
+*~
+
+# Future generated outputs (no engine or dependencies installed)
+node_modules/
+dist/
+build/
+coverage/
+.godot/
