@@ -1,6 +1,6 @@
 # KrewetekBuldogul — Game Design Draft
 
-**Document status:** Design draft with approved milestone 1 refinement, 2026-10-09. The supplied creative brief is **Confirmed**; all names, story details, mechanics, quantities beyond that brief, and numerical tuning below are **Proposed** unless explicitly marked otherwise. **TBD** identifies an unresolved decision. The [approved prototype overrides](#63-approved-milestone-1-prototype-overrides) govern the current feel test; they do not approve production balance. The [validation report](MILESTONE_1_VALIDATION.md) records prototype checks without establishing full-game playtesting.
+**Document status:** Design draft with authorized milestone 2 combat foundation, 2026-10-09. The supplied creative brief is **Confirmed**; all names, story details, mechanics, quantities beyond that brief, and numerical tuning below are **Proposed** unless explicitly marked otherwise. **TBD** identifies an unresolved decision. The [milestone 2 prototype rules](#64-authorized-milestone-2-combat-foundation) preserve the accepted milestone 1 feel; they do not approve final production balance. The [current validation report](MILESTONE_2_VALIDATION.md) records checks separately from the [historical milestone 1 report](MILESTONE_1_VALIDATION.md).
 
 **Design owner / approval:** TBD. This document owns gameplay rules, content IDs, and balance values. [Art Design](ART_DESIGN_TEMPLATE.md) owns presentation specifications; [Technical Design](TECHNICAL_DESIGN.md) owns architecture and platform validation. Cross-document decisions and prioritized open questions belong in the [decision register](DECISIONS_AND_OPEN_QUESTIONS.md). The existing filename is retained for link compatibility.
 
@@ -20,9 +20,9 @@
 | Audio | Cartoonish, pleasant sound effects; no music |
 | Inputs | Customizable gameplay and menu actions on keyboard/mouse, DualShock 4, and Xbox One/Series; controller USB/Bluetooth validation on compatible hardware |
 | Delivery and workflow | Browser deployment preferred; Windows desktop browsers first, other desktop systems later; free tools and a code-first Codex in VS Code workflow |
-| Current authorization | Milestone 1 technical prototype and its approved refinement only: TypeScript/Babylon.js/Vite, one procedural gym/player, boxing gloves/dummy, initial input, and validation. Section 6.3 governs approved prototype tuning; later milestones, production assets, and deployment remain outside scope |
+| Current authorization | Milestone 2 input/combat foundation: TypeScript/Babylon.js/Vite, procedural gym/player/three weapons/boxers, dummy and encounter modes, complete input customization, local settings profiles, and validation. Section 6.4 governs current prototype tuning; milestone 3 and later, production assets/audio, and deployment remain outside scope |
 
-One local player, a fixed orthographic camera, and TypeScript + Babylon.js + Vite are approved for milestone 1; broader production design remains subject to review. Multiplayer, accounts, cloud saves, mobile/touch input, native builds, and a licensed real-person portrayal are not requirements. References do not authorize copying Hades characters, narrative, compositions, UI, or assets, and do not establish how Hades II renders internally.
+One local player, a fixed orthographic camera, and TypeScript + Babylon.js + Vite are approved for milestones 1–2; broader production design remains subject to review. Multiplayer, accounts, cloud saves, mobile/touch input, native builds, and a licensed real-person portrayal are not requirements. References do not authorize copying Hades characters, narrative, compositions, UI, or assets, and do not establish how Hades II renders internally.
 
 ## 2. Vision and experience
 
@@ -80,7 +80,7 @@ Checkpoint on entering a safe room before its encounter and after settling a rew
 
 ## 5. Movement, combat, and common rules
 
-The table below retains **Proposed production tuning inputs**, not approved final balance. For the current prototype, the [approved section 6.3 overrides](#63-approved-milestone-1-prototype-overrides) take precedence; unchanged prototype rules remain as implemented for milestone 1.
+The table below retains **Proposed production tuning inputs**, not approved final balance. For the current prototype, the [milestone 2 rules](#64-authorized-milestone-2-combat-foundation), including the retained section 6.3 overrides, take precedence; relevant unchanged rules are authorized as adjustable prototype defaults.
 
 | Rule | Proposed definition |
 | --- | --- |
@@ -103,11 +103,11 @@ Base damage always belongs to one identifiable attack opportunity: one rifle rou
 
 ## 6. Exactly three weapons
 
-The identities are **Confirmed**. Names, production mechanics, timings, and selection rules are **Proposed**; [section 6.3](#63-approved-milestone-1-prototype-overrides) separately records approved prototype overrides. The proposed production rule is to choose one weapon before the run; all three are available immediately. No in-run switching, carried backup weapon, secondary attack, alternate form, or fourth weapon is included. The same attack action drives every weapon; the rifle additionally uses reload.
+The identities are **Confirmed**. Names, final production mechanics, timings, and selection rules remain **Proposed**; [section 6.4](#64-authorized-milestone-2-combat-foundation) separately records authorized prototype behavior. The proposed production rule is to choose one weapon before the run; all three are available immediately. No in-run switching, carried backup weapon, secondary attack, alternate form, or fourth weapon is included. The same attack action drives every weapon; the rifle additionally uses reload.
 
 ### 6.1 Weapon definitions
 
-These are the retained **Proposed production** definitions. They do not replace the approved current glove values in section 6.3.
+These are the retained **Proposed production** definitions. Section 6.4 authorizes relevant behavior as adjustable prototype defaults and overrides damage/timing where specified; this table does not replace the current prototype values.
 
 | Field | weapon_01 | weapon_02 | weapon_03 |
 | --- | --- | --- | --- |
@@ -129,7 +129,7 @@ The pillar is an exaggerated portable monument: a shortened shaft, oversized bas
 
 ### 6.2 Shared balance benchmark
 
-**Confirmed production relationship:** melee baseline sustained single-target DPS matches; rifle is slightly lower. **Proposed production numerical interpretation:** gloves 100 DPS, column 100 DPS, rifle 90 DPS (10% lower). The temporary glove-only feel test in section 6.3 differs deliberately; all three weapons must be reconciled during milestone 2 before accepting a production benchmark.
+**Confirmed production relationship:** melee baseline sustained single-target DPS matches; rifle is slightly lower. **Historical Proposed production numerical interpretation:** gloves 100 DPS, column 100 DPS, rifle 90 DPS (10% lower). The accepted glove feel in section 6.3 is retained in the milestone 2 prototype benchmark in section 6.4. Neither benchmark establishes approved final production balance.
 
 The benchmark uses the same stationary, effectively unlimited-health, zero-defense target with no invulnerability, guards, knockback, power-ups, assists, critical hits, misses, dash cancels, or movement interruptions. Every eligible strike hits one target. Measure complete repeat cycles, including preparation, active time, recovery, combo boundaries, and rifle reload. These are spreadsheet-style design calculations, not application test results.
 
@@ -145,7 +145,7 @@ This does not make weapons equally effective in play. Rifle firing-only DPS is 1
 
 ### 6.3 Approved milestone 1 prototype overrides
 
-**Confirmed for this prototype feel test only, 2026-10-09:** The user authorized these changes after reporting responsive, natural movement and mouse aiming, but movement that felt too slow and glove attacks needing more reach and speed. This is the authoritative current tuning override; it does not approve final production balance or milestone 2 implementation.
+**Confirmed for the milestone 1 prototype feel test, 2026-10-09:** The user authorized these changes after reporting responsive, natural movement and mouse aiming, but movement that felt too slow and glove attacks needing more reach and speed. The later milestone 2 request accepts and retains these settings under section 6.4. This earlier refinement alone did not authorize milestone 2 or final production balance.
 
 | Parameter | Original milestone 1 default | Approved refinement |
 | --- | --- | --- |
@@ -165,7 +165,27 @@ The complete four-strike cycle is **50 ticks at 60 Hz = 5/6 s, approximately 0.8
 
 Under the same ideal benchmark assumptions as section 6.2, theoretical sustained glove DPS is **100 / (5/6) = 120**. Use complete cycles when measuring this override (for example, 12 cycles over 10 s yield 1,200 theoretical damage); the proposed production 12-second comparison is not the current glove acceptance target. This figure is a timing calculation, not a claim about combat effectiveness or owner acceptance of the newly tuned build. Actual check results and pending manual retests belong in the [validation report](MILESTONE_1_VALIDATION.md).
 
-Keep the proposed 100/100/90 production benchmark visible for later review. Milestone 2 must reconcile glove and pillar damage/timing while keeping their baseline sustained single-target DPS equal and rifle DPS slightly lower. No other weapons, upgrades, or production balance changes are authorized by this refinement.
+Keep the historical proposed 100/100/90 production benchmark visible for later review. The subsequent milestone 2 request reconciles prototype weapons under section 6.4, preserving equal melee baseline DPS and slightly lower rifle DPS. No upgrades or final production balance changes were authorized by this earlier refinement.
+
+### 6.4 Authorized milestone 2 combat foundation
+
+**Confirmed for the milestone 2 prototype, 2026-10-09:** The owner accepted the refined movement, glove reach, and punch cadence, then authorized all three weapon behaviors, full input customization with local settings profiles, and a bounded repeatable boxer encounter. This does not approve final production balance, physical hardware not explicitly tested, or any production visual alternative. The section 6.3 glove and movement settings remain in force. The older section 6.2 numbers remain historical Proposed production inputs, not the current prototype benchmark.
+
+Choose one of the three weapons in preparation before starting a dummy or boxer test. All weapons are available immediately; no in-combat switching is implemented. Starting/restarting creates fresh health, ammunition, cooldowns, buffers, attack/reload state, enemies, and measurements. Settings/profiles persist independently. Restart and changing equipment during a paused round require confirmation; defeat/completion permits retry or return to preparation. Interact at the marked preparation station pauses the round and opens these options; it does not create a reward or level transition.
+
+| Prototype weapon | Authorized damage and complete repeat cycle | Sustained single-target DPS | Complete cycles / damage in 60 s |
+| --- | --- | --- | --- |
+| `weapon_01` Grot | 21.6 damage × 20 shots, each 3/1/5 ticks at 60 Hz, then 60-tick reload; 240 ticks / 4 s per magazine cycle | **108** | 15 magazines / **6,480** |
+| `weapon_02` gloves | Unchanged 20/20/30/30 damage; exact fractional phases from section 6.3; 50 ticks / 5⁄6 s | **120** | 72 combos / **7,200** |
+| `weapon_03` pillar | 180 damage per 33/9/48-tick sweep; 90 ticks / 1.5 s | **120** | 40 sweeps / **7,200** |
+
+Section 6.1's other weapon behaviors are authorized as adjustable prototype defaults: rifle 12 m single-target hitscan, 20-round magazine, unlimited reserve, manual/automatic reload and 80% movement; gloves 60-degree nearest-target cone and 70% movement with the accepted reach; pillar 2.6 m / 100-degree cleave and 35% movement. Stagger, knockback, shot/activation facing, cover, cancellation barriers, and reload rules follow sections 5 and 6.1. Actual implementation and check results are recorded separately in [milestone 2 validation](MILESTONE_2_VALIDATION.md).
+
+Use fractional damage internally; HUD rounding cannot change health or damage calculations. Measure real fixed-step simulation over ticks `[0, 3600)`, with the next cycle beginning at tick 3600 outside the sample. The benchmark target is stationary, effectively unlimited-health, unguarded, and unarmored; disable displacement, assistance, upgrades, misses, and invulnerability. Include all recovery/reload time. A small stated floating-point tolerance may cover arithmetic representation, never a missing or extra hit. Report burst and aggregate crowd output separately; equal ideal melee DPS is not evidence of equal encounter effectiveness.
+
+The combat test uses exactly three instances of the proposed `B01_E01` Jabber in the existing gym, separately from dummy practice. Their GDD health/damage/telegraph/poise behavior is an adjustable prototype default. Test-fixture additions are radius 0.36 m, movement 2.8 m/s, a 60-degree jab cone with a 3-tick active window, one second of initial preparation grace, and fixed starting positions `(-1.2, 1.7)`, `(1.2, 1.7)`, `(0, 3.4)` in ground-plane coordinates. At most two enemies prepare or actively attack simultaneously. Visibility and unobstructed attack checks prevent offscreen initiation and hitting through cover. Health reaching zero stops the round; killing all three completes it. These fixture choices do not approve full-level layouts or roster production.
+
+Milestone 2 remains silent and uses original procedural placeholders. No bosses, rewards, power-ups, route progression, run saves, production assets, or public deployment are included. Production balance still needs playtesting and owner review; preserve equal melee baseline sustained DPS and slightly lower rifle DPS.
 
 ## 7. Biomes, levels, rooms, and route
 
@@ -288,9 +308,9 @@ No pair is forbidden by source. Three deliberate tensions remain visible in tool
 
 **Proposed:** Health, ammunition, upgrade ownership/stacks, active effects, and route progress belong to the current run. At preparation, health/magazine reset and no upgrade is retained. Settings, discovered descriptions, tutorial acknowledgement, and best results persist. No permanent attack/health upgrades, currency economy, unlock weapons, or additional playable characters are implied. Use the preparation menu to review knowledge without requiring another run.
 
-### 10.2 Proposed action set and defaults
+### 10.2 Prototype action set and defaults
 
-**Confirmed:** All gameplay and menu actions are customizable across supported inputs. The mappings below are starting proposals, not fixed controls. The game must display current bindings, not hardcoded glyphs. The user reported successful physical DualShock 4 USB use in Chrome on the original prototype; detailed per-action results and a tuned-build retest remain pending. Other hardware/transport combinations and exact Xbox One capability still require physical validation, as detailed in the [TDD compatibility matrix](TECHNICAL_DESIGN.md#10-validation-and-compatibility-matrix).
+**Confirmed:** All gameplay and menu actions are customizable across supported inputs. The mappings below are editable milestone 2 defaults, not fixed controls or final production approval. The game displays current bindings rather than hardcoded glyphs. The owner accepted refined movement/reach/punch feel. The user-reported physical DualShock 4 USB success in Chrome concerns the earlier prototype; detailed per-action results and fresh milestone 2 physical testing remain pending. Other hardware/transport combinations and exact Xbox One capability still require physical validation, as detailed in the [TDD compatibility matrix](TECHNICAL_DESIGN.md#10-validation-and-compatibility-matrix).
 
 | Context / action | Keyboard / mouse default | DualShock 4 default | Xbox default | Semantics |
 | --- | --- | --- | --- | --- |
@@ -299,15 +319,17 @@ No pair is forbidden by source. Three deliberate tensions remain visible in tool
 | Gameplay: primary attack | Left mouse button | R2 | RT | Hold repeats complete attack sequence; optional toggle-to-repeat setting; no compulsory rapid tapping |
 | Gameplay: dash | Space | L2 | LT | Press once; can map to button, trigger, or supported axis direction |
 | Gameplay: reload | R | Square | X | Press; manual rifle reload only, clearly inactive on melee |
-| Gameplay: interact / take exit | E | Cross | A | Press; safe rewards open a paused choice menu; no hold requirement |
-| Gameplay: pause / resume | Escape | Options | Menu | Press; clear held attacks before resuming |
+| Gameplay: interact | E | Cross | A | Press at the marked preparation station to pause/open round options; no rewards or level exits in milestone 2 |
+| Gameplay: pause | Escape | Options | Menu | Press; resume with menu Confirm on Resume or menu Back; clear held attacks before resuming |
 | Menus: directional navigation | Arrow keys / WASD; pointer hover/click | D-pad or left stick | D-pad or left stick | Repeat delay/rate configurable; digital/analog alternatives |
 | Menus: confirm | Enter / left mouse button | Cross | A | Press; destructive run abandonment uses explicit confirmation |
 | Menus: back / cancel | Escape / right mouse button | Circle | B | Press; does not also dash/attack because gameplay context is suspended |
-| Menus: previous / next tab | Q / E | L1 / R1 | LB / RB | Separate remappable actions |
+| Menus: previous / next tab or focus | Shift+Tab / Tab | L1 / R1 | LB / RB | Separate remappable actions; bindings/calibration tabs are also focusable controls |
+| Menus: restart round | F5 or labeled button | Triangle | Y | Paused rounds require discard confirmation; never a gameplay reload shortcut |
+| Menus: open controls | F2 or labeled button | Share | View | Opens the controls/settings editor while gameplay stays paused |
 | Menus: scroll up / down | Mouse wheel / Page Up / Page Down | Right stick vertical | Right stick vertical | Remappable scalar/digital actions; navigable scroll controls are an alternative |
 | Rebinding: begin capture / apply | Menu confirm | Menu confirm | Menu confirm | Uses current valid menu mapping; wait for initiating control release before capture |
-| Rebinding: cancel capture | Menu back | Menu back | Menu back | Uses last-known-good mapping; an on-screen cancel remains available |
+| Rebinding: cancel capture | Hold current menu Back for 1.2 s, or pointer Cancel | Same | Same | Tap Back can itself be captured; preview dialogs use ordinary Back. Last valid mapping remains available |
 | Rebinding: clear / restore selected / restore profile | Focusable labeled buttons using menu confirm | Same | Same | No inaccessible hidden shortcut; restoring mappings does not reset saves |
 
 Each action accepts compatible alternate controls: keys, mouse buttons/wheel, exposed controller buttons/triggers, axes, and axis directions. Allow physical-key-position versus character-label choice, keyboard-only menu use, and digital aim/movement alternatives. Browsers/OS may reserve some keys/system buttons or omit hardware features; explain unavailable controls without falsely promising capture. No touchpad, motion sensor, or haptics dependency is required.
@@ -332,7 +354,7 @@ The authoritative SFX event inventory, variations, repetition limits, priorities
 
 ## 12. Scope and future playtest plan
 
-Milestone 1 has explicit implementation authorization; later stages need a separate request. The first playable is a validation subset, not a reduction of the confirmed eventual nine-level scope. This design document is not validation evidence; consult the [milestone report](MILESTONE_1_VALIDATION.md) for prototype results and outstanding checks. Production balance and rights clearance remain unestablished.
+Milestones 1–2 have explicit implementation authorization; milestone 3 and later need a separate request. The playable foundation is a validation subset, not a reduction of the confirmed eventual nine-level scope. This design document is not validation evidence; consult the [milestone 2 report](MILESTONE_2_VALIDATION.md) for current results and outstanding checks. Production balance and rights clearance remain unestablished.
 
 | Proposed stage | Content and question to resolve |
 | --- | --- |
@@ -343,7 +365,7 @@ Milestone 1 has explicit implementation authorization; later stages need a separ
 
 | Future question | Scenario / proposed acceptance criterion | Evidence status |
 | --- | --- | --- |
-| Does production baseline damage meet the relationship? | Proposed section 6.2 target: zero-defense stationary target; exact 12 s complete cycles yield 1,080/1,200/1,200 for rifle/gloves/column; log every phase and reload; no upgrades or assists | Full three-weapon comparison remains unimplemented. Current prototype glove checks use the approved section 6.3 override; milestone 2 must reconcile production values |
+| Does production baseline damage meet the relationship? | Historical section 6.2 proposal: zero-defense stationary target; exact 12 s complete cycles yield 1,080/1,200/1,200 for rifle/gloves/column; log every phase and reload; no upgrades or assists | Current prototype comparison uses section 6.4's different 60-second benchmark; measured checks belong in the milestone 2 report. Final production balance remains unapproved |
 | Do interrupts preserve honest timing? | Cancel every startup/recovery/reload boundary; no phantom hit, ammunition refill, Impact credit, or shortened next-cycle start | Untested |
 | Are weapons viable beyond a dummy? | Each weapon completes the same seeded route without upgrades and with matched budgets; compare uptime, damage taken, overkill, crowd damage, and reload/cancel behavior before setting a win-rate tolerance | Untested; participant count and final tolerance TBD |
 | Are upgrade combinations bounded? | Exercise all 21 effects individually, the identified synergy pairs, and an eight-effect stress build; no recursive proc, duplicate reward, over-cap stack, or multiple column Impact awards per sweep | Untested |
@@ -361,5 +383,6 @@ Milestone 1 has explicit implementation authorization; later stages need a separ
 | 2026-10-09 | Supplied character/theme, three weapon identities, three-by-three biome scope, enemy families/major roles, seven sources, modern urban visual direction, pleasant SFX, and no music | Confirmed by the creative brief |
 | 2026-10-09 | Populated fictional story, original protagonist proposal, combat values, nine-level route, enemy roles/phases, sample power-ups, controls, and validation plan | Proposed design draft; arithmetic/content review only |
 | 2026-10-09 | Approved milestone 1 movement, glove reach, and glove rate overrides with unchanged damage; retained proposed production balance separately | Confirmed user refinement request; newly tuned feel requires a fresh manual retest, with evidence in the validation report |
+| 2026-10-09 | Accepted refined movement/reach/punch feel; authorized milestone 2 input customization, settings profiles, three weapons, a bounded boxer encounter, and the section 6.4 benchmark | Confirmed later user request; not new physical-hardware metadata, visual-direction selection, or final production balance approval |
 
 The [prioritized review queue](DECISIONS_AND_OPEN_QUESTIONS.md#prioritized-open-questions) contains at most ten questions for this initial review. Highest-impact GDD decisions are the fictional premise/president separation, one-weapon-per-run rule, movement/aim/dash feel, upgrade selection and persistence, and content/rating boundaries. Those proposals can be revised without treating this document as permission to implement.

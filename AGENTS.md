@@ -4,9 +4,11 @@
 
 The user authorized milestone 1 on 2026-10-09: a TypeScript + Babylon.js + Vite playable technical prototype with one gym room, one placeholder character, boxing-glove attacks, a training dummy, initial keyboard/mouse/gamepad input, and validation. Free project dependencies, test tools, local servers, and original procedural placeholders are authorized. Existing Proposed tuning may be used as adjustable prototype defaults, not final approved balance.
 
-Commit validated work on `Dev`, push to `origin/Dev`, and open a review PR against `Main`; leave it unmerged and `Dev` active. Use normal environment approvals where required. Later milestones, full rebinding UI, the full three-weapon system, production assets, public deployment, and paid services remain outside this authorization. Preserve all other rules below.
+Commit validated work on `Dev`, push to `origin/Dev`, and update review PR #2 against `Main`; leave it unmerged and `Dev` active/default. Use normal environment approvals where required. Preserve all other rules below.
 
 The user subsequently authorized a milestone 1 refinement: movement +10%, glove reach +30%, attack rate +20% with unchanged per-hit damage, focused validation, a Proposed visual-review brief, and updating existing PR #2. The GDD records the authoritative prototype overrides; these do not approve final three-weapon balance. Record the user-reported Chrome/DualShock 4 USB success as an earlier-build observation, not a fresh physical test of the tuned build.
+
+The user then accepted the refined movement/reach/punch feel and explicitly authorized milestone 2: complete gameplay/menu remapping and recovery; versioned local controls/settings profiles; all three weapon behaviors; a repeatable basic-boxer encounter plus dummy mode; original procedural presentation; validation and the same Dev/PR workflow. The approved adjustable prototype targets are gloves/pillar/rifle 120/120/108 DPS; preserve the accepted glove settings. Follow the GDD milestone 2 override. No additional physical-hardware result or final art approval follows from feel acceptance. Milestone 3 and later, run progression/saves/upgrades/bosses, production assets/audio, music, public deployment, and paid services remain outside authorization.
 
 ## Sources of truth
 
@@ -48,4 +50,4 @@ Keep these documents consistent. Use UTF-8 Markdown and relative links within th
 
 ## Verification
 
-For milestone 1, run type checking, meaningful simulation/input tests, production build, lockfile install verification, and actual browser smoke checks. Document measured performance with conditions. Label simulated gamepad checks separately from physical Xbox One/Series and DualShock 4 USB/Bluetooth checks; never claim unavailable hardware was tested. Check file scope, relative links, requirement coverage, and cross-document consistency. Exclude generated artifacts and private data from commits.
+For authorized milestones, run type checking, meaningful simulation/input/settings tests, production build, and actual Chrome/Edge browser checks. Reuse unchanged installed dependencies and the earlier lockfile-install evidence; revalidate installation when dependencies change. Exercise the actual UI and combat, and document measured performance with conditions. Label simulated gamepad checks separately from physical Xbox One/Series and DualShock 4 USB/Bluetooth checks; never claim unavailable hardware was tested. Preserve milestone 1's historical report and record milestone 2 evidence separately. Check file scope, relative links, requirement coverage, and cross-document consistency. Exclude generated artifacts and private data from commits.

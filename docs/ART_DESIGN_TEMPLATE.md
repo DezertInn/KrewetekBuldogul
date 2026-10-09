@@ -2,13 +2,13 @@
 
 **Document status:** Populated design draft v0.1. Creative requirements are confirmed; detailed production choices await review.
 
-**Prepared:** 2026-10-09. **Art approval owner:** TBD. Milestone 1 uses separately authorized procedural placeholders; no production assets are approved.
+**Prepared:** 2026-10-09. **Art approval owner:** TBD. Milestone 2 continues separately authorized original procedural placeholders; no production assets are approved.
 
 ## 1. Scope and status
 
 **Confirmed** identifies the user's requirements. **Proposed** identifies recommendations, including every new name, palette, dimension, asset budget, animation treatment and production method below. **TBD** identifies a decision needing further input. Unless a paragraph or table explicitly says Confirmed, it describes a Proposed starting point.
 
-This document owns presentation, audio direction and asset specifications. [Game Design](GAME_DESIGN_TEMPLATE.md) owns narrative, abilities, attack timings, power-up effects, enemy behavior and balance. [Technical Design](TECHNICAL_DESIGN.md) owns architecture, global performance targets and compatibility. Shared decisions and the prioritized questions live in [Decisions and Open Questions](DECISIONS_AND_OPEN_QUESTIONS.md). The user separately authorized milestone 1's original procedural placeholders; this draft does not authorize production assets or later milestones.
+This document owns presentation, audio direction and asset specifications. [Game Design](GAME_DESIGN_TEMPLATE.md) owns narrative, abilities, attack timings, power-up effects, enemy behavior and balance. [Technical Design](TECHNICAL_DESIGN.md) owns architecture, global performance targets and compatibility. Shared decisions and the prioritized questions live in [Decisions and Open Questions](DECISIONS_AND_OPEN_QUESTIONS.md). The user separately authorized milestone 2's original procedural weapons, boxers, animations, cues, and UI. This does not authorize production assets, audio, or milestone 3 and later.
 
 | Area | Confirmed creative requirement |
 | --- | --- |
@@ -19,7 +19,7 @@ This document owns presentation, audio direction and asset specifications. [Game
 | Power-up sources | Exactly seven: Bóg, Ojczyzna, Orzeł Biały w koronie, Szacunek ulicy, Fryderyk Chopin, Maria Skłodowska-Curie, Mikołaj Kopernik. |
 | Sound | Pleasant, cartoonish sound effects. No music, including musical reward stingers or Chopin recordings. |
 | Input and delivery | Remappable gameplay and menu actions for keyboard/mouse, DualShock 4 and Xbox One/Series; USB/Bluetooth validation on compatible hardware. Windows desktop browsers first; other desktop systems later. |
-| Workflow | Free tools and code-first development through Codex in VS Code. TypeScript + Babylon.js + Vite and free project/test tooling are approved for milestone 1; production assets remain outside authorization. |
+| Workflow | Free tools and code-first development through Codex in VS Code. TypeScript + Babylon.js + Vite and necessary free project/test tooling continue for milestone 2; production assets remain outside authorization. |
 
 ## 2. Visual direction
 
@@ -42,7 +42,7 @@ The reference brief is conceptual only: Hades/Hades II for composition and clari
 
 **User-reported feedback, 2026-10-09:** The initial Chrome prototype worked generally as expected, but its colors, animations, textures, and character design were unsatisfactory. The procedural placeholders are not an approved visual target. Successful technical checks establish neither art acceptance nor approval of the palette and proportions proposed below.
 
-**Proposed review brief:** Keep the confirmed bright, charming, funny adult hero, prominent red-and-white scarf, original modern Polish urban setting, and readable isometric presentation. Use a small, coherent review of the hero and gym before expanding production assets. The following comparisons are future review work; this refinement authorizes documenting the brief, not producing finished art.
+**Proposed review brief:** Keep the confirmed bright, charming, funny adult hero, prominent red-and-white scarf, original modern Polish urban setting, and readable isometric presentation. Use a small, coherent review of the hero and gym before expanding production assets. The following comparisons remain future review work. The user's subsequent acceptance of movement, glove reach, and punch speed does not choose between these visual alternatives or approve the current placeholder appearance.
 
 | Review area | Proposed comparison grounded in the existing direction | Owner decision needed |
 | --- | --- | --- |
@@ -52,6 +52,21 @@ The reference brief is conceptual only: Hades/Hades II for composition and clari
 | Animation feel | Use confident footwork with visibly planted steps, distinct anticipation/contact/return-to-guard poses, and restrained scarf follow-through. Compare restrained athletic timing with more comic pose exaggeration; preserve the approved gameplay phase timings and avoid added hits, camera shake, or artificial delay. | Choose how grounded or theatrical poses should be, with clarity during repeated fast punches as the acceptance check. |
 
 **Proposed review outcome:** Approve one combined direction at the actual camera distance, recording palette, silhouette, surface treatment, and animation choices together. Review 1280×720 and 1920×1080, eight facings, grayscale, and reduced effects before treating it as a production target. Until that owner review, the current build remains a gameplay-feel prototype. The [decision register](DECISIONS_AND_OPEN_QUESTIONS.md#prioritized-open-questions) tracks the unresolved approval; no production asset generation is authorized here.
+
+### 2.2 Authorized milestone 2 presentation boundary
+
+**Confirmed for the prototype:** Continue the existing procedural gym and original fictional scarf-wearing hero. Add only the readable placeholder presentation needed to exercise the three weapons, fixed basic-boxer group, health/protection, preparation/results, and complete controls UI. This work proceeds while the section 2.1 visual decisions remain open.
+
+| System | Prototype presentation requirement |
+| --- | --- |
+| Rifle | Distinct compact firearm silhouette, visible muzzle/aim direction, brief cosmetic tracer/impact, and clear ammunition/reload feedback. The tracer never determines damage timing. |
+| Gloves | Preserve accepted cadence; show alternating anticipation, contact, and return-to-guard poses with reach feedback matching the authoritative hit query. |
+| Pillar | Distinct oversized column silhouette with wind-up, heavy sweep, and committed recovery; active-region feedback follows simulation reach/cone rather than decorative mesh extents. |
+| Basic boxers | Use `B01_E01` as the sole archetype for the fixed three-enemy test. Show approach, anticipation, active attack, recovery, stagger, and defeat with pose/shape cues; do not rely on color alone. Keep attacks visible in the actual camera framing. |
+| State and menus | Readable weapon, attack phase, ammunition/reload, dash, player/enemy health, encounter completion/defeat, retry, and preparation selection. Controls/help prompts reflect active bindings and chosen prompt family; focus and recovery actions remain clear. |
+| Audio | Remain silent. No sound production, music, musical stingers, or recordings are part of this milestone. Essential information is visual. |
+
+GDD [section 6.4](GAME_DESIGN_TEMPLATE.md#64-authorized-milestone-2-combat-foundation) owns weapon/encounter timing and balance. Animation and VFX consume those states/events; they cannot add a hit, shorten recovery, refill ammunition early, or change collision. [Milestone 2 validation](MILESTONE_2_VALIDATION.md) records actual screenshot/animation checks and limitations separately from art acceptance.
 
 ## 3. Camera and composition
 
@@ -251,7 +266,7 @@ Load lightweight UI for all three weapon choices, then the shared hero, selected
 
 ## 13. Prioritized asset inventory
 
-These are future production specifications, not produced assets. Milestone 1 authorizes original procedural placeholders only. After separate production authorization, **P0** validates the pipeline, **P1** covers initial content, **P2** is optional polish needing review. The production inventory below is not authorization to build it now.
+These are future production specifications, not produced assets. Milestone 2 authorizes only the original procedural presentation in section 2.2. After separate production authorization, **P0** validates the pipeline, **P1** covers initial content, **P2** is optional polish needing review. The production inventory below is not authorization to build it now.
 
 | Priority / inventory ID | Deliverable and content mapping | Approval criterion |
 | --- | --- | --- |

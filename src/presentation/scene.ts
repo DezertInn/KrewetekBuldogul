@@ -14,17 +14,25 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
+import { VertexBuffer } from '@babylonjs/core/Buffers/buffer';
+import { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import '@babylonjs/core/Culling/ray';
-import { ROOM, RULES } from '../game/config';
-import type { GameState, HitEvent, Vec2 } from '../game/types';
+import { BOXER_RULES, RIFLE_RULES, ROOM, WEAPONS } from '../game/config';
+import { rayCoverDistance, rayTargetDistance, meleeEligible } from '../game/simulation';
+import type { EnemyState, GameState, HitEvent, Vec2 } from '../game/types';
 
-// Original, reproducible milestone-1 placeholders. No downloaded assets or shaders.
+// Original, reproducible prototype placeholders. No downloaded assets or shaders.
 const PALETTE = {
   ink: '#303D45', plum: '#302D48', teal: '#178F91', floor: '#668C8C',
   mat: '#377C83', cream: '#FFF3DD', plaster: '#D8C9A6', coral: '#BA6659',
   red: '#D93445', gold: '#F4C950', skin: '#E7AC84', hair: '#82482F',
 };
 type Impact = { root: TransformNode; sparks: Mesh[]; ring: Mesh; age: number };
+type RangeCue = { root: TransformNode; fill: Mesh; outline: LinesMesh; material: StandardMaterial; steps: number };
+type BoxerView = {
+  root: TransformNode; body: TransformNode; arms: TransformNode[]; legs: TransformNode[];
+  cue: RangeCue; health: TransformNode; healthFill: Mesh; target: Mesh; material: StandardMaterial;
+};
 
 export class GameView {
   readonly engine: Engine;
@@ -37,13 +45,20 @@ export class GameView {
   private readonly body: TransformNode;
   private readonly legs: TransformNode[] = [];
   private readonly arms: TransformNode[] = [];
+  private readonly gloves: Mesh[] = [];
+  private readonly rifle: TransformNode;
+  private readonly rifleMagazine: Mesh;
+  private readonly pillar: TransformNode;
   private readonly scarf: TransformNode;
   private readonly shadow: Mesh;
   private readonly dummy: TransformNode;
   private readonly dummyBody: TransformNode;
   private readonly dummyMaterial: StandardMaterial;
-  private readonly aim: TransformNode;
-  private readonly coneMaterial: StandardMaterial;
+  private readonly aim: RangeCue;
+  private readonly rifleAim: LinesMesh;
+  private readonly dummyTarget: Mesh;
+  private readonly boxers = new Map<string, BoxerView>();
+  private readonly tracers: LinesMesh[] = [];
   private readonly dashRing: Mesh;
   private readonly impacts: Impact[] = [];
   private previous: Vec2 | null = null;
@@ -86,6 +101,10 @@ export class GameView {
     this.scarf = new TransformNode('scarf-secondary-motion', this.scene);
     this.scarf.parent = this.body;
     this.buildCharacter();
+    const rifle = this.buildRifle();
+    this.rifle = rifle.root;
+    this.rifleMagazine = rifle.magazine;
+    this.pillar = this.buildPillar();
     this.shadow = this.disc('player-contact', 0.9, this.material('shadow', '#142B33', 0.25), null, 0, 0.026, 0);
     this.shadow.scaling.z = 0.8;
 
@@ -94,11 +113,19 @@ export class GameView {
     this.dummyBody.parent = this.dummy;
     this.dummyMaterial = this.material('dummy-padding', PALETTE.coral);
     this.buildDummy();
-    this.aim = new TransformNode('glove-reach', this.scene);
-    this.coneMaterial = this.material('range-fill', PALETTE.cream, 0.08);
-    this.coneMaterial.disableLighting = true;
-    this.coneMaterial.emissiveColor = Color3.FromHexString(PALETTE.cream);
-    this.buildCone();
+    this.aim = this.buildCone('weapon-reach', PALETTE.cream);
+    this.rifleAim = MeshBuilder.CreateLines('rifle-cover-clipped-aim', { points: [Vector3.Zero(), Vector3.Zero()], updatable: true }, this.scene);
+    this.rifleAim.color = Color3.FromHexString(PALETTE.cream);
+    this.rifleAim.alpha = 0.65;
+    this.rifleAim.isPickable = false;
+    this.dummyTarget = this.buildTargetRing('dummy-target', 0.45);
+    for (let i = 0; i < 4; i++) {
+      const tracer = MeshBuilder.CreateLines(`cosmetic-tracer-${i}`, { points: [Vector3.Zero(), Vector3.Zero()], updatable: true }, this.scene);
+      tracer.color = Color3.FromHexString(PALETTE.gold);
+      tracer.isPickable = false;
+      tracer.setEnabled(false);
+      this.tracers.push(tracer);
+    }
     this.dashRing = MeshBuilder.CreateTorus('dash-indicator', { diameter: 0.85, thickness: 0.035, tessellation: 32 }, this.scene);
     this.dashRing.material = this.material('dash', '#9EE5DC', 0.6);
     this.dashRing.isPickable = false;
@@ -166,6 +193,25 @@ export class GameView {
     const center = MeshBuilder.CreateTorus('mat-center-paint', { diameter: 2.7, thickness: 0.024, tessellation: 48 }, this.scene);
     this.place(center, paint, null, 0, 0.063, 0);
     center.scaling.y = 0.1;
+    const station = MeshBuilder.CreateTorus('preparation-station-ring', { diameter: 1.85, thickness: 0.032, tessellation: 40 }, this.scene);
+    this.place(station, this.material('station-paint', '#B4CFC3'), null, 0, 0.074, -2.5);
+    station.scaling.y = 0.1;
+    const stationMark = this.box('preparation-station-mark', 0.32, 0.009, 0.045, this.color('cream'), null, 0, 0.078, -3.40);
+    stationMark.rotation.y = Math.PI / 4;
+    const stationTexture = new DynamicTexture('preparation-label', { width: 512, height: 96 }, this.scene, false);
+    const stationContext = stationTexture.getContext() as CanvasRenderingContext2D;
+    stationContext.fillStyle = PALETTE.mat;
+    stationContext.fillRect(0, 0, 512, 96);
+    stationContext.fillStyle = '#D3E1D2';
+    stationContext.textAlign = 'center';
+    stationContext.font = 'bold 49px sans-serif';
+    stationContext.fillText('PREPARATION', 256, 67);
+    stationTexture.update();
+    const stationMaterial = this.material('preparation-label', '#FFFFFF');
+    stationMaterial.diffuseTexture = stationTexture;
+    const stationLabel = MeshBuilder.CreatePlane('preparation-label', { width: 1.55, height: 0.29, sideOrientation: Mesh.DOUBLESIDE }, this.scene);
+    this.place(stationLabel, stationMaterial, null, 0.05, 0.081, -3.65);
+    stationLabel.rotation.x = Math.PI / 2;
 
     // Tall walls only on the far sides; near-side plinths preserve actor visibility.
     this.box('back-plaster', w * 2 + 0.15, 2.6, 0.22, this.color('plaster'), null, 0, 1.3, d + 0.11);
@@ -275,9 +321,11 @@ export class GameView {
       arm.parent = this.body;
       arm.position.set(side * 0.38, 1.12, 0.14);
       this.sphere('sleeve', 0.30, this.color('teal'), arm, 0, 0, -0.10).scaling.y = 1.2;
-      this.sphere('glove-cuff', 0.23, this.color('ink'), arm, 0, -0.015, 0.10);
-      this.sphere('boxing-glove', 0.38, this.color(side < 0 ? 'red' : 'cream'), arm, 0, 0.015, 0.28).scaling.z = 1.08;
-      this.sphere('glove-thumb', 0.16, this.color(side < 0 ? 'red' : 'cream'), arm, -side * 0.16, -0.02, 0.20);
+      this.gloves.push(this.sphere('glove-cuff', 0.23, this.color('ink'), arm, 0, -0.015, 0.10));
+      const glove = this.sphere('boxing-glove', 0.38, this.color(side < 0 ? 'red' : 'cream'), arm, 0, 0.015, 0.28);
+      glove.scaling.z = 1.08;
+      this.gloves.push(glove, this.sphere('glove-thumb', 0.16, this.color(side < 0 ? 'red' : 'cream'), arm, -side * 0.16, -0.02, 0.20));
+      this.sphere('hand', 0.19, this.color('skin'), arm, 0, 0, 0.18);
       this.arms.push(arm);
     }
     this.cylinder('neck', 0.21, 0.17, this.color('skin'), this.body, 0, 1.47, 0);
@@ -302,6 +350,40 @@ export class GameView {
     }
   }
 
+  private buildRifle(): { root: TransformNode; magazine: Mesh } {
+    const root = new TransformNode('stylized-grot-placeholder', this.scene);
+    root.parent = this.body;
+    root.position.set(0.13, 1.06, 0.39);
+    const metal = this.material('rifle-metal', '#424B50');
+    this.box('rifle-receiver', 0.16, 0.20, 0.63, metal, root, 0, 0, 0.12);
+    this.box('rifle-stock', 0.13, 0.22, 0.32, this.color('ink'), root, 0, -0.015, -0.30);
+    this.box('rifle-handguard', 0.20, 0.17, 0.34, this.color('plaster'), root, 0, 0, 0.41);
+    const barrel = this.cylinder('rifle-barrel', 0.063, 0.42, metal, root, 0, 0.025, 0.72);
+    barrel.rotation.x = Math.PI / 2;
+    this.box('rifle-sight', 0.045, 0.065, 0.075, this.color('cream'), root, 0, 0.14, 0.43);
+    this.box('rifle-grip', 0.11, 0.21, 0.12, this.color('ink'), root, 0, -0.17, -0.05).rotation.x = -0.2;
+    const magazine = this.box('rifle-magazine', 0.12, 0.32, 0.17, this.color('ink'), root, 0, -0.21, 0.18);
+    magazine.rotation.x = 0.12;
+    root.setEnabled(false);
+    return { root, magazine };
+  }
+
+  private buildPillar(): TransformNode {
+    const root = new TransformNode('portable-monument-placeholder', this.scene);
+    root.parent = this.body;
+    root.position.set(0.48, 1.02, 0.25);
+    const stone = this.material('pillar-stone', '#BBB7A7');
+    this.cylinder('pillar-shortened-shaft', 0.21, 1.5, stone, root, 0, 0.25, 0, 0.27);
+    this.box('pillar-capital', 0.48, 0.16, 0.45, this.color('plaster'), root, 0, 1.04, 0);
+    this.box('pillar-base', 0.42, 0.17, 0.41, stone, root, 0, -0.58, 0);
+    this.cylinder('pillar-neck', 0.29, 0.12, this.color('plaster'), root, 0, 0.9, 0);
+    // Abstract geometric finial; not a reproduction of a statue or scan.
+    this.cylinder('pillar-finial', 0.20, 0.3, this.color('gold'), root, 0, 1.25, 0, 0.07);
+    this.sphere('pillar-finial-tip', 0.14, this.color('gold'), root, 0, 1.43, 0);
+    root.setEnabled(false);
+    return root;
+  }
+
   private buildDummy(): void {
     this.disc('dummy-contact', 1.22, this.material('shadow', '#142B33', 0.25), this.dummy, 0, 0.04, 0);
     this.cylinder('dummy-weight', 0.76, 0.13, this.color('ink'), this.dummy, 0, 0.09, 0);
@@ -317,32 +399,149 @@ export class GameView {
     }
   }
 
-  private buildCone(): void {
+  private buildCone(name: string, color: string): RangeCue {
+    const root = new TransformNode(name, this.scene);
+    const material = this.material(`${name}-fill`, color, 0.10);
+    material.disableLighting = true;
+    material.emissiveColor = Color3.FromHexString(color);
+    material.backFaceCulling = false;
     const positions: number[] = [0, 0, 0], indices: number[] = [], normals: number[] = [0, 1, 0];
     const line: Vector3[] = [Vector3.Zero()];
-    const steps = 24;
+    // 41 arc samples + both sides of each cover/room corner (32), padded when
+    // corners are outside the cone. Fixed buffers avoid per-frame mesh allocation.
+    const steps = 72;
     for (let i = 0; i <= steps; i++) {
-      const angle = -RULES.gloveHalfAngle + i / steps * RULES.gloveHalfAngle * 2;
-      const x = Math.sin(angle) * RULES.gloveRange, z = Math.cos(angle) * RULES.gloveRange;
-      positions.push(x, 0, z);
+      positions.push(0, 0, 0);
       normals.push(0, 1, 0);
-      line.push(new Vector3(x, 0.005, z));
+      line.push(Vector3.Zero());
       if (i < steps) indices.push(0, i + 1, i + 2);
     }
     line.push(Vector3.Zero());
     const data = new VertexData();
     data.positions = positions; data.indices = indices; data.normals = normals;
-    const mesh = new Mesh('exact-glove-range', this.scene);
-    data.applyToMesh(mesh);
-    mesh.material = this.coneMaterial;
-    this.coneMaterial.backFaceCulling = false;
-    mesh.parent = this.aim;
+    const mesh = new Mesh(`${name}-cover-clipped-fill`, this.scene);
+    data.applyToMesh(mesh, true);
+    mesh.material = material;
+    mesh.parent = root;
     mesh.isPickable = false;
-    const outline = MeshBuilder.CreateLines('reach-outline', { points: line }, this.scene);
-    outline.color = Color3.FromHexString('#DCE6D4');
-    outline.alpha = 0.45;
-    outline.parent = this.aim;
+    const outline = MeshBuilder.CreateLines(`${name}-outline`, { points: line, updatable: true }, this.scene);
+    outline.color = Color3.FromHexString(color);
+    outline.alpha = 0.70;
+    outline.parent = root;
     outline.isPickable = false;
+    return { root, fill: mesh, outline, material, steps };
+  }
+
+  private updateCone(cue: RangeCue, position: Vec2, facing: Vec2, range: number, halfAngle: number, color: string, alpha: number): void {
+    cue.root.position.set(position.x, 0.087, position.z);
+    const positions = [0, 0, 0];
+    const line = [new Vector3(0, 0.005, 0)];
+    const yaw = Math.atan2(facing.x, facing.z);
+    const angles = Array.from({ length: 41 }, (_, i) => -halfAngle + i / 40 * halfAngle * 2);
+    const corners: Vec2[] = [];
+    for (const obstacle of ROOM.obstacles) for (const xSide of [-1, 1]) for (const zSide of [-1, 1])
+      corners.push({ x: obstacle.x + xSide * obstacle.width / 2, z: obstacle.z + zSide * obstacle.depth / 2 });
+    for (const xSide of [-1, 1]) for (const zSide of [-1, 1]) corners.push({ x: xSide * ROOM.halfWidth, z: zSide * ROOM.halfDepth });
+    for (const corner of corners) {
+      const relative = Math.atan2(corner.x - position.x, corner.z - position.z) - yaw;
+      const wrapped = Math.atan2(Math.sin(relative), Math.cos(relative));
+      for (const offset of [-0.00001, 0.00001]) if (Math.abs(wrapped + offset) < halfAngle) angles.push(wrapped + offset);
+    }
+    angles.sort((a, b) => a - b);
+    while (angles.length <= cue.steps) angles.push(halfAngle);
+    for (let i = 0; i <= cue.steps; i++) {
+      const angle = yaw + angles[i];
+      const direction = { x: Math.sin(angle), z: Math.cos(angle) };
+      const clipped = rayCoverDistance(position, direction, range, ROOM);
+      const x = direction.x * clipped, z = direction.z * clipped;
+      positions.push(x, 0, z);
+      line.push(new Vector3(x, 0.005, z));
+    }
+    line.push(new Vector3(0, 0.005, 0));
+    cue.fill.updateVerticesData(VertexBuffer.PositionKind, positions);
+    cue.fill.refreshBoundingInfo();
+    MeshBuilder.CreateLines(cue.outline.name, { points: line, instance: cue.outline }, this.scene);
+    const tint = Color3.FromHexString(color);
+    cue.material.diffuseColor.copyFrom(tint);
+    cue.material.emissiveColor.copyFrom(tint);
+    cue.material.alpha = alpha;
+    cue.outline.color.copyFrom(tint);
+  }
+
+  private buildTargetRing(name: string, radius: number): Mesh {
+    const mesh = MeshBuilder.CreateTorus(name, { diameter: radius * 2, thickness: 0.035, tessellation: 32 }, this.scene);
+    mesh.material = this.material('eligible-target-ring', PALETTE.gold);
+    mesh.isPickable = false;
+    mesh.scaling.y = 0.15;
+    mesh.setEnabled(false);
+    return mesh;
+  }
+
+  private buildBoxer(id: string, index: number): BoxerView {
+    const root = new TransformNode(`boxer-${id}`, this.scene);
+    const body = new TransformNode(`boxer-body-${id}`, this.scene);
+    body.parent = root;
+    const arms: TransformNode[] = [], legs: TransformNode[] = [];
+    const material = this.material(`boxer-jersey-${id}`, '#935758');
+    this.disc(`boxer-shadow-${id}`, BOXER_RULES.radius * 2 + 0.2, this.material('shadow', '#142B33', 0.25), root, 0, 0.004, 0);
+    this.box(`boxer-jersey-${id}`, 0.57, 0.56, 0.36, material, body, 0, 1.02, 0);
+    this.box(`boxer-waist-${id}`, 0.52, 0.10, 0.37, this.color('cream'), body, 0, 0.76, 0);
+    this.box(`boxer-shorts-${id}`, 0.50, 0.29, 0.36, this.color('plum'), body, 0, 0.57, 0);
+    this.sphere(`boxer-head-${id}`, 0.45, this.color('skin'), body, 0, 1.58, 0);
+    this.cylinder(`boxer-neck-${id}`, 0.23, 0.17, this.color('skin'), body, 0, 1.33, 0);
+    this.box(`boxer-brow-${id}`, 0.29, 0.035, 0.035, this.color('hair'), body, 0, 1.64, 0.208);
+    this.box(`boxer-nose-${id}`, 0.075, 0.08, 0.11, this.color('skin'), body, 0, 1.57, 0.22);
+    for (const side of [-1, 1]) {
+      const leg = new TransformNode(`boxer-leg-${id}-${side}`, this.scene);
+      leg.parent = body;
+      leg.position.set(side * 0.15, 0.59, 0);
+      this.cylinder(`boxer-leg-skin-${id}`, 0.21, 0.39, this.color('skin'), leg, 0, -0.18, 0);
+      this.box(`boxer-boot-${id}`, 0.23, 0.18, 0.33, this.color('cream'), leg, 0, -0.45, 0.06);
+      legs.push(leg);
+      const arm = new TransformNode(`boxer-arm-${id}-${side}`, this.scene);
+      arm.parent = body;
+      arm.position.set(side * 0.35, 1.11, 0.12);
+      this.cylinder(`boxer-upper-arm-${id}`, 0.2, 0.25, this.color('skin'), arm, 0, 0, 0);
+      this.sphere(`boxer-glove-${id}`, 0.32, this.color('coral'), arm, 0, 0.06, 0.23);
+      arms.push(arm);
+    }
+    this.box(`boxer-number-${id}`, 0.06 + index * 0.035, 0.18, 0.02, this.color('cream'), body, 0, 1.06, 0.191);
+    const health = new TransformNode(`boxer-health-${id}`, this.scene);
+    // Align the bar with screen-right (+X,+Z), not the camera depth axis.
+    health.rotation.y = -Math.PI / 4;
+    this.box(`boxer-health-track-${id}`, 0.88, 0.085, 0.04, this.color('ink'), health, 0, 0, 0);
+    const healthFill = this.box(`boxer-health-fill-${id}`, 0.80, 0.045, 0.05, this.color('coral'), health, 0, 0, -0.01);
+    const cue = this.buildCone(`boxer-threat-${id}`, '#F6B856');
+    return { root, body, arms, legs, cue, health, healthFill, target: this.buildTargetRing(`boxer-target-${id}`, BOXER_RULES.radius), material };
+  }
+
+  private updateBoxer(enemy: EnemyState, visual: BoxerView, time: number): void {
+    visual.root.position.set(enemy.position.x, 0.08, enemy.position.z);
+    visual.root.rotation.y = Math.atan2(enemy.facing.x, enemy.facing.z);
+    const dead = enemy.phase === 'defeated';
+    const walking = enemy.phase === 'approach';
+    const flashing = Math.min(1, enemy.hitFlash / 0.18);
+    visual.material.diffuseColor.copyFrom(Color3.Lerp(Color3.FromHexString('#935758'), Color3.FromHexString(PALETTE.cream), flashing));
+    visual.body.rotation.x = dead ? -Math.PI / 2 : enemy.phase === 'staggered' ? -0.25 : enemy.phase === 'recovery' ? 0.13 : 0;
+    visual.body.rotation.z = enemy.phase === 'staggered' ? Math.sin(time * 24) * 0.11 : 0;
+    visual.body.position.y = dead ? 0.28 : walking ? Math.abs(Math.sin(time * 11)) * 0.028 : 0;
+    visual.legs.forEach((leg, i) => { leg.rotation.x = walking ? Math.sin(time * 11 + i * Math.PI) * 0.27 : 0; });
+    const phase = enemy.phase;
+    visual.arms.forEach((arm, i) => {
+      const punching = i === 1;
+      arm.position.z = 0.12 + (punching ? phase === 'preparation' ? -0.16 * enemy.attackProgress : phase === 'active' ? 0.47 : phase === 'recovery' ? 0.47 * (1 - enemy.attackProgress) : 0 : 0);
+      arm.position.y = phase === 'preparation' ? 1.20 : phase === 'staggered' ? 0.94 : 1.11;
+      arm.rotation.x = phase === 'preparation' ? -0.22 : 0;
+    });
+    const threatening = phase === 'preparation' || phase === 'active';
+    visual.cue.root.setEnabled(threatening);
+    if (threatening) this.updateCone(visual.cue, enemy.position, enemy.facing, BOXER_RULES.range, BOXER_RULES.halfAngle,
+      phase === 'active' ? '#FF6B57' : '#F6B856', phase === 'active' ? 0.58 : 0.16 + enemy.attackProgress * 0.22);
+    visual.health.setEnabled(!dead);
+    visual.health.position.set(enemy.position.x, 2.08, enemy.position.z);
+    const hp = Math.max(0, enemy.health / enemy.maxHealth);
+    visual.healthFill.scaling.x = hp;
+    visual.healthFill.position.x = (hp - 1) * 0.4;
   }
 
   private buildImpacts(): void {
@@ -358,6 +557,7 @@ export class GameView {
   }
 
   render(state: GameState, events: HitEvent[], dt: number): void {
+    const effectDt = Math.max(0, Math.min(dt, state.time - this.previousTime));
     if (state.time < this.previousTime) {
       this.lastHitId = -1;
       this.previous = null;
@@ -373,31 +573,97 @@ export class GameView {
     this.player.position.set(p.position.x, 0.065, p.position.z);
     this.player.rotation.y = Math.atan2(p.facing.x, p.facing.z);
     this.body.position.y = walking ? Math.abs(Math.sin(this.walkPhase)) * 0.055 : Math.sin(state.time * 3) * 0.018;
-    this.body.rotation.x = p.dashRemaining > 0 ? 0.2 : 0;
+    this.body.rotation.x = p.health <= 0 ? -Math.PI * 0.45 : p.hitFlash > 0 ? -0.10 : p.dashRemaining > 0 ? 0.2 : 0;
+    this.body.rotation.z = 0;
     this.legs.forEach((leg, i) => { leg.rotation.x = walking ? Math.sin(this.walkPhase + i * Math.PI) * 0.42 : 0; });
     const phase = p.attackPhase;
+    const weapon = WEAPONS[state.weapon];
+    const candidates = state.sessionMode === 'dummy' ? [{ ...state.dummy, id: 'dummy' }] : state.enemies;
+    const gloves = state.weapon === 'weapon_02';
+    const rifle = state.weapon === 'weapon_01';
+    this.gloves.forEach(mesh => mesh.setEnabled(gloves));
+    this.rifle.setEnabled(rifle);
+    this.pillar.setEnabled(state.weapon === 'weapon_03');
     const extension = phase === 'active' ? 0.50 : phase === 'startup' ? -0.08 * p.attackProgress : phase === 'recovery' ? 0.48 * (1 - p.attackProgress) : 0;
     this.arms.forEach((arm, i) => {
-      arm.position.z = 0.14 + (i === p.combo % 2 ? extension : 0);
+      arm.position.z = 0.14 + (gloves && i === p.combo % 2 ? extension : !gloves ? 0.12 : 0);
       arm.position.y = 1.12 + (walking ? Math.sin(this.walkPhase + i * Math.PI) * 0.035 : 0);
+      arm.rotation.set(0, 0, 0);
+      if (rifle && phase === 'reload' && i === 0) {
+        arm.position.y -= Math.sin(p.reloadProgress * Math.PI) * 0.28;
+        arm.position.z += 0.08;
+      }
     });
+    this.rifle.position.z = 0.39 - (phase === 'active' ? 0.10 : phase === 'recovery' ? 0.10 * (1 - p.attackProgress) : 0);
+    this.rifle.rotation.z = phase === 'reload' ? -0.22 : 0;
+    this.rifle.rotation.x = phase === 'reload' ? -0.15 : 0;
+    this.rifleMagazine.position.y = -0.21 - (phase === 'reload' ? Math.sin(p.reloadProgress * Math.PI) * 0.32 : 0);
+    if (state.weapon === 'weapon_03') {
+      const sweep = phase === 'startup' ? -0.8 * p.attackProgress : phase === 'active' ? -0.8 + p.attackProgress * 1.6 : phase === 'recovery' ? 0.8 * (1 - p.attackProgress) : 0;
+      this.pillar.rotation.set(phase === 'ready' ? 0.28 : 0.75, sweep, -0.27);
+      this.pillar.position.x = 0.45 + Math.sin(sweep) * 0.27;
+      this.body.rotation.y = sweep * 0.13;
+    } else this.body.rotation.y = 0;
     this.scarf.rotation.x = p.dashRemaining > 0 ? -0.7 : Math.sin(state.time * 7) * (walking ? 0.2 : 0.035);
     this.scarf.rotation.z = walking ? Math.sin(this.walkPhase * 0.5) * 0.12 : 0;
     this.shadow.position.set(p.position.x, 0.069, p.position.z);
-    this.aim.position.set(p.position.x, 0.079, p.position.z);
-    this.aim.rotation.y = this.player.rotation.y;
-    this.coneMaterial.alpha = phase === 'active' ? 0.42 : phase === 'startup' ? 0.23 : phase === 'recovery' ? 0.11 : 0.055;
-    const coneColor = Color3.FromHexString(phase === 'active' ? PALETTE.gold : PALETTE.cream);
-    this.coneMaterial.diffuseColor.copyFrom(coneColor);
-    this.coneMaterial.emissiveColor.copyFrom(coneColor);
-    this.dashRing.setEnabled(p.invulnerable);
+    this.aim.root.setEnabled(!rifle && p.health > 0);
+    if (!rifle) this.updateCone(this.aim, p.position, p.facing, weapon.range, weapon.halfAngle,
+      phase === 'active' ? PALETTE.gold : PALETTE.cream, phase === 'active' ? 0.42 : phase === 'startup' ? 0.23 : phase === 'recovery' ? 0.11 : 0.055);
+    const coverDistance = rayCoverDistance(p.position, p.facing, weapon.range + 1, ROOM);
+    let rayDistance = Math.min(weapon.range, coverDistance);
+    let rifleTarget: string | null = null;
+    if (rifle) for (const target of candidates.filter(target => target.health > 0).sort((a, b) => a.id.localeCompare(b.id))) {
+      const distance = rayTargetDistance(p.position, p.facing, target);
+      // Match hitscan's inclusive range endpoint and cover-first intersection ties.
+      if (distance <= weapon.range + 1e-9 && distance < coverDistance - 1e-9 && (distance < rayDistance - 1e-9 || !rifleTarget && distance <= rayDistance + 1e-9)) { rayDistance = distance; rifleTarget = target.id; }
+    }
+    this.rifleAim.setEnabled(rifle && p.health > 0);
+    if (rifle) MeshBuilder.CreateLines(this.rifleAim.name, {
+      points: [new Vector3(p.position.x, 0.09, p.position.z), new Vector3(p.position.x + p.facing.x * rayDistance, 0.09, p.position.z + p.facing.z * rayDistance)], instance: this.rifleAim,
+    }, this.scene);
+    this.dashRing.setEnabled(p.invulnerable || p.hurtRemaining > 0);
+    this.dashRing.scaling.setAll(p.invulnerable ? 1 : 1.12);
+    this.dashRing.visibility = p.hitFlash > 0 ? 1 : p.hurtRemaining > 0 ? 0.55 : 0.85;
     this.dashRing.position.set(p.position.x, 0.09, p.position.z);
+    this.dummy.setEnabled(state.sessionMode === 'dummy');
     this.dummy.position.set(state.dummy.position.x, 0.065, state.dummy.position.z);
     const flash = Math.min(1, Math.max(0, state.dummy.hitFlash / 0.15));
     this.dummyMaterial.diffuseColor.copyFrom(Color3.Lerp(Color3.FromHexString(PALETTE.coral), Color3.FromHexString(PALETTE.cream), flash));
     const spent = state.dummy.health <= 0;
     this.dummyBody.rotation.x = spent ? -Math.PI * 0.45 : Math.sin(state.time * 42) * flash * 0.13;
     this.dummyBody.scaling.set(1 + flash * 0.08, spent ? 0.55 : 1 - flash * 0.05, 1 + flash * 0.08);
+    // The floor fan shows weapon reach. Rings identify eligible target bodies,
+    // including their radius at the reach boundary, using the combat helper.
+    const eligible = candidates.filter(target => target.health > 0 && !rifle && meleeEligible(p.position, p.facing, target, weapon.range, weapon.halfAngle, ROOM))
+      .sort((a, b) => Math.hypot(a.position.x - p.position.x, a.position.z - p.position.z) - Math.hypot(b.position.x - p.position.x, b.position.z - p.position.z) || a.id.localeCompare(b.id));
+    const selected = new Set((gloves ? eligible.slice(0, 1) : eligible).map(target => target.id));
+    if (rifleTarget) selected.add(rifleTarget);
+    this.dummyTarget.setEnabled(state.sessionMode === 'dummy' && selected.has('dummy') && p.health > 0);
+    this.dummyTarget.position.set(state.dummy.position.x, 0.095, state.dummy.position.z);
+    const enemyIds = new Set(state.enemies.map(enemy => enemy.id));
+    for (const [id, visual] of this.boxers) {
+      if (!enemyIds.has(id) || state.sessionMode !== 'encounter') {
+        visual.root.setEnabled(false); visual.cue.root.setEnabled(false); visual.health.setEnabled(false); visual.target.setEnabled(false);
+      }
+    }
+    state.enemies.forEach((enemy, index) => {
+      let visual = this.boxers.get(enemy.id);
+      if (!visual) { visual = this.buildBoxer(enemy.id, index); this.boxers.set(enemy.id, visual); }
+      visual.root.setEnabled(state.sessionMode === 'encounter');
+      if (state.sessionMode !== 'encounter') return;
+      this.updateBoxer(enemy, visual, state.time);
+      visual.target.setEnabled(selected.has(enemy.id) && p.health > 0);
+      visual.target.position.set(enemy.position.x, 0.095, enemy.position.z);
+    });
+    this.tracers.forEach((tracer, index) => {
+      const event = state.tracers[index];
+      tracer.setEnabled(Boolean(event));
+      if (!event) return;
+      // Origin/endpoints come only from simulation; this visual never deals damage.
+      MeshBuilder.CreateLines(tracer.name, { points: [new Vector3(event.from.x, 0.96, event.from.z), new Vector3(event.to.x, 0.96, event.to.z)], instance: tracer }, this.scene);
+      tracer.alpha = Math.min(1, event.remaining / RIFLE_RULES.tracerSeconds);
+    });
 
     for (const event of events) {
       if (event.id <= this.lastHitId) continue;
@@ -408,7 +674,7 @@ export class GameView {
       effect.root.setEnabled(true);
     }
     for (const effect of this.impacts) {
-      effect.age += Math.max(0, dt);
+      effect.age += effectDt;
       if (effect.age >= 0.34) { effect.root.setEnabled(false); continue; }
       const t = effect.age / 0.34;
       effect.ring.scaling.setAll(0.55 + t * 1.7);

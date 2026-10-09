@@ -50,7 +50,7 @@ npm.cmd run test:browser
 
 The browser configuration uses installed **Google Chrome** and **Microsoft Edge** channels. Both must be installed to run the entire matrix; to run one installed browser use `npm.cmd run test:browser -- --project=chrome` or `--project=edge`. No browser was downloaded for this validation. The runner can start preview itself when one is not already running; using a separate preview terminal avoided child-server shutdown delays in the agent's Windows sandbox. Stop preview with Ctrl+C when finished.
 
-For ordinary play and editing use `npm.cmd run dev`, then open `http://127.0.0.1:5173/`. Exact controls are in [README](../README.md#prototype-controls). Use `npm.cmd` when PowerShell blocks `npm.ps1`; changing system execution policy is unnecessary.
+For ordinary play and editing use `npm.cmd run dev`, then open `http://127.0.0.1:5173/`. Current controls are in [README](../README.md#default-controls); this report preserves milestone 1's historical evidence. Use `npm.cmd` when PowerShell blocks `npm.ps1`; changing system execution policy is unnecessary.
 
 ## Toolchain and checks
 

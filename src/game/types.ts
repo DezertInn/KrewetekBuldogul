@@ -7,14 +7,39 @@ export interface Actions {
   attackHeld: boolean;
   attackPressed: boolean;
   dashPressed: boolean;
+  reloadPressed?: boolean;
+  interactPressed?: boolean;
 }
-export type AttackPhase = 'ready' | 'startup' | 'active' | 'recovery';
+export type WeaponId = 'weapon_01' | 'weapon_02' | 'weapon_03';
+export type SessionMode = 'dummy' | 'encounter';
+export type AttackPhase = 'ready' | 'startup' | 'active' | 'recovery' | 'reload';
+export interface EnemyState {
+  id: string;
+  archetype: 'B01_E01';
+  position: Vec2;
+  facing: Vec2;
+  radius: number;
+  health: number;
+  maxHealth: number;
+  phase: 'approach' | 'preparation' | 'active' | 'recovery' | 'staggered' | 'defeated';
+  attackProgress: number;
+  hitFlash: number;
+  poise: number;
+  staggerRemaining: number;
+  staggerImmunity: number;
+}
+export interface Tracer { id: number; from: Vec2; to: Vec2; remaining: number }
 export interface GameState {
   time: number;
-  player: { position: Vec2; facing: Vec2; radius: number; dashRemaining: number; dashCooldown: number; invulnerable: boolean; attackPhase: AttackPhase; attackProgress: number; combo: number };
+  weapon: WeaponId;
+  sessionMode: SessionMode;
+  outcome: 'playing' | 'complete' | 'defeat';
+  player: { position: Vec2; facing: Vec2; radius: number; dashRemaining: number; dashCooldown: number; invulnerable: boolean; attackPhase: AttackPhase; attackProgress: number; combo: number; health: number; maxHealth: number; hitFlash: number; hurtRemaining: number; ammo: number; maxAmmo: number; reloadRemaining: number; reloadProgress: number };
   dummy: { position: Vec2; radius: number; health: number; maxHealth: number; hitFlash: number };
+  enemies: EnemyState[];
+  tracers: Tracer[];
   damageTotal: number;
   hits: number;
   lastDamage: number;
 }
-export interface HitEvent { kind: 'hit'; position: Vec2; damage: number; id: number }
+export interface HitEvent { kind: 'hit'; position: Vec2; damage: number; id: number; targetId?: string; source?: 'player' | 'enemy'; weapon?: WeaponId }

@@ -1,102 +1,125 @@
 # KrewetekBuldogul
 
-An action roguelite set in an exaggerated contemporary Polish urban world, using Hades as a reference for responsive combat, movement, encounters, and repeated runs.
+An action roguelite set in an exaggerated contemporary Polish urban world, with Hades as a high-level reference for responsive combat and readable isometric presentation.
 
-[Public GitHub repository](https://github.com/DezertInn/KrewetekBuldogul)
+[Public repository](https://github.com/DezertInn/KrewetekBuldogul) · [Open review PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2)
 
-**Current phase: milestone 1 technical prototype.** A procedural 3D gym, a scarf-wearing placeholder player, movement/aim/dash, boxing-glove attacks, and a resettable training dummy form the first playable slice. TypeScript, Babylon.js, and Vite are approved for this milestone. See the [validation report](docs/MILESTONE_1_VALIDATION.md) for checks, measured conditions, and remaining manual verification.
+**Current phase: milestone 2 input and combat foundation.** The TypeScript + Babylon.js + Vite prototype has one procedural gym, one fictional scarf-wearing hero, three selectable weapons, dummy practice, and a repeatable encounter with three basic boxers. Gameplay/menu controls are customizable, with local profiles, calibration, and recovery. See [milestone 2 validation](docs/MILESTONE_2_VALIDATION.md) for actual checks and limitations; [milestone 1 validation](docs/MILESTONE_1_VALIDATION.md) preserves earlier evidence.
 
-This slice has one weapon and one room. The full three-weapon game, nine levels, enemies, power-ups, saves, full control-rebinding UI, production art/audio, and public deployment remain future work. There is no music or audio in this prototype. The current movement and glove feel test uses [approved prototype overrides](docs/GAME_DESIGN_TEMPLATE.md#63-approved-milestone-1-prototype-overrides); retained **Proposed** production values are not final approved balance.
+This is a bounded combat test. The nine-level campaign, bosses, power-ups/rewards, run progression/saves, production assets/audio, and public deployment remain future work. The prototype is silent. Current colors, textures, character design, and animation treatment are placeholders, not approved production art.
 
 ## Run locally
 
-Use Node.js **24.21.0 LTS** and npm **11.19.0**, the verified local toolchain. Open this repository's folder or `KrewetekBuldogul.code-workspace` in VS Code, then use its terminal from the repository root.
+Open this folder or `KrewetekBuldogul.code-workspace` in VS Code. The toolchain verified for milestone 1 was Node.js **24.21.0 LTS** and npm **11.19.0**; supported Node versions are declared in [package.json](package.json). From the repository root:
 
 ```powershell
 npm.cmd ci
 npm.cmd run dev
 ```
 
-Open **http://127.0.0.1:5173/** in a desktop browser. Leave the terminal running; press **Ctrl+C** there to stop the server. Click **Begin training** or use the keyboard/controller menu controls. No separate engine editor or account is required. Geometry is generated locally; there are no external art assets.
+Open **http://127.0.0.1:5173/** in desktop Chrome or Edge. Choose a weapon and **Dummy practice** or **Boxer encounter**, then **Begin training**. All three weapons are available immediately; one stays equipped throughout a round. No separate engine editor or game account is required. Keep the terminal running; **Ctrl+C** stops the server.
 
-Use `npm.cmd` in Windows PowerShell because the `npm.ps1` wrapper may be blocked by execution policy; changing system policy is unnecessary. If a newly installed Node.js is not found, fully restart VS Code before retrying. On other desktop systems the command name is normally `npm`, but those systems are a later validation target.
+Use `npm.cmd` in Windows PowerShell if its script policy blocks `npm.ps1`; no policy change is needed. Fully restart VS Code after installing Node if the terminal cannot find it. Other desktop systems use the usual `npm` command but remain later validation targets.
 
-`npm.cmd ci` installs exactly from the committed lockfile. Use `npm.cmd install` only when intentionally adding or updating project dependencies, and review/commit the resulting lockfile change.
+Run `npm.cmd ci` for the initial locked installation or when dependencies change; reuse the installed dependencies for ordinary development. Use `npm.cmd install` only for intentional dependency changes and review the lockfile.
 
 | Command | Purpose |
 | --- | --- |
-| `npm.cmd run dev` | Local development server at `http://127.0.0.1:5173/` |
+| `npm.cmd run dev` | Local development at `http://127.0.0.1:5173/` |
 | `npm.cmd run typecheck` | TypeScript validation |
-| `npm.cmd test` | Simulation and input tests |
-| `npm.cmd run build` | Production build into ignored `dist/` |
-| `npm.cmd run preview` | Preview the existing build at `http://127.0.0.1:4173/` |
-| `npm.cmd run test:browser` | Automated browser smoke checks; browser setup and conditions are in the validation report |
+| `npm.cmd test` | Simulation, input, and settings tests |
+| `npm.cmd run build` | Type check and production build into ignored `dist/` |
+| `npm.cmd run preview` | Serve the existing build at `http://127.0.0.1:4173/` |
+| `npm.cmd run test:browser` | Playwright checks in installed Chrome and Edge |
 
-Run `npm.cmd run build` before previewing or running browser tests. The browser test matrix uses installed Chrome and Edge; see the [validation instructions](docs/MILESTONE_1_VALIDATION.md#reproduce) to run only one installed browser. Local preview is not public deployment. The exact dependencies and commands are defined in [package.json](package.json) and [package-lock.json](package-lock.json).
+Build before previewing or running browser tests. Browser tests start or reuse local preview; select one browser with `npm.cmd run test:browser -- --project=chrome` or `--project=edge`. Local preview is not public deployment. Exact dependencies are pinned in [package.json](package.json) and [package-lock.json](package-lock.json).
 
-## Prototype controls
+## Play the prototype
 
-| Action | Keyboard / mouse | Standard-mapped controller |
+- **Gloves:** quick four-strike combo, one nearest eligible target per strike.
+- **Grot rifle:** ranged hitscan blocked by cover, 20-round magazine, manual or automatic reload, unlimited reserve ammunition.
+- **Pillar:** slow committed sweep that can hit several eligible targets once each.
+- **Dummy practice:** inspect reach, attack timing, damage totals, and reload behavior without enemy pressure.
+- **Boxer encounter:** dodge visible preparations, counter during recovery, and defeat the fixed three-boxer group. Player defeat and encounter completion offer retry or return to preparation.
+
+Pause to resume, restart, change weapon/round, or open settings. Restarting or changing preparation during a live round requires confirmation; it clears combat state while preserving controls. Interact at the preparation station to open the paused session menu. Weapons cannot be switched during combat.
+
+The user accepted the refined movement, glove reach, and punch speed. [GDD section 6.4](docs/GAME_DESIGN_TEMPLATE.md#64-authorized-milestone-2-combat-foundation) preserves that feel and defines adjustable prototype sustained single-target targets of **120 / 120 / 108 DPS for gloves / pillar / rifle**. Actual measured results belong in the validation report; burst damage, pillar crowd damage, and practical encounter effectiveness are separate from this benchmark. Final production balance remains open.
+
+## Default controls
+
+These are editable defaults. In-game prompts update when bindings or prompt family change.
+
+| Action | Keyboard / mouse | Standard controller: Xbox / PlayStation |
 | --- | --- | --- |
 | Move | W / A / S / D | Left stick |
-| Aim | Mouse pointer or arrow keys | Right stick; direction is retained when released |
-| Attack | Left mouse button | Right trigger: RT / R2 |
-| Dash | Space | Left trigger: LT / L2 |
-| Pause / menu | Escape | Menu / Options |
-| Menu navigation | Up / Down arrows or W / S | D-pad or left stick |
-| Confirm / start / resume | Enter or click the focused action | A / Cross |
-| Back | Escape | B / Circle |
-| Restart training | R or Restart in the menu | Select Restart in the menu |
+| Aim | Pointer or arrow keys | Right stick; retain direction on release |
+| Primary attack | Left mouse button | RT / R2 |
+| Dash | Space | LT / L2 |
+| Reload rifle | **R** | X / Square |
+| Interact at preparation station | E | A / Cross |
+| Pause | Escape | Menu / Options |
+| Menu navigation / adjust | Arrows or W / A / S / D | D-pad or left stick |
+| Confirm / apply | Enter or pointer activation | A / Cross |
+| Back / cancel | Escape or right mouse button | B / Circle |
+| Restart from pause/results | **F5**, or the menu action | Y / Triangle |
+| Open controls from menus | F2, or **Controls and settings** | View / Share |
+| Next / previous tab or focus | Tab / Shift+Tab | RB / LB, R1 / L1 |
+| Menu scrolling | Page Up / Page Down or mouse wheel | Right stick vertical |
 
-Release held controls before resuming. Focus loss, a hidden tab, or active-controller disconnection pauses play and clears held actions; resuming is deliberate. Controller status and input-family instructions are visible in the interface. Press a controller button if the browser has not detected it yet.
+**R reloads; it never restarts the session.** Restart is a separate menu action. Browser-reserved shortcuts can depend on focus and browser behavior; visible menu controls remain available.
 
-This milestone uses the browser's **standard** gamepad mapping. An unknown mapping is reported instead of guessing controls. The user reported successful physical **DualShock 4 over USB in Chrome** on the original prototype; the exact browser version, controller revision/firmware, and detailed per-action results were not supplied. A fresh physical test of the tuned build is pending. DualShock Bluetooth, Xbox One/Series, and other browser/hardware combinations remain unverified in the [physical test matrix](docs/TECHNICAL_DESIGN.md#10-validation-and-compatibility-matrix); simulated tests do not establish hardware compatibility. Bindings are editable data in [the input module](src/input/controls.ts); the in-game rebinding interface belongs to milestone 2.
+Focus loss, a hidden tab, or active-controller disconnect pauses play and clears actions. Resume deliberately after releasing held controls. Reconnection, changing bindings, and leaving settings must not trigger an attack. Press a controller button if the browser has not exposed the device yet.
 
-## Confirmed scope
+## Customize and recover controls
 
-- One handsome, charming, funny adult Polish football hooligan protagonist, with bright clothing and a prominent red-and-white scarf; an original fictional identity without a direct recognizable likeness to the loose Karol Nawrocki reference.
-- Exactly three weapons: a stylized FB MSBS Grot assault rifle, fast boxing gloves, and a slow, heavy Kolumna Zygmunta-inspired pillar.
-- Equal production baseline sustained single-target DPS for the two melee weapons; slightly lower rifle DPS. Exact production values remain Proposed; the approved glove-only prototype override is temporary.
-- Three biomes with three levels each: boxing gym, football stadium, and presidential palace; nine levels in the initial scope.
-- Boxers and a miniboss in the gym; hooligans and a miniboss in the stadium; clerks, lobbyists, and a president final boss in the palace.
-- PS4 / DualShock 4, Xbox controller, and keyboard/mouse input.
-- Customizable gameplay and menu controls across supported inputs.
-- Browser deployment preferred.
-- 3D graphics presented through an isometric top-down view, with Hades II as the presentation reference.
-- Windows desktop browsers first; other desktop systems later.
-- Xbox One/Series and DualShock 4 controller testing over USB and Bluetooth.
-- Free development tools and a code-first workflow through Codex in VS Code.
-- Original modern urban art direction with expressive silhouettes and readable combat; Hades is a high-level reference.
-- Seven power-up sources: Bóg, Ojczyzna, Orzeł Biały w koronie, Szacunek ulicy, Fryderyk Chopin, Maria Skłodowska-Curie, and Mikołaj Kopernik.
-- Pleasant cartoon sound effects and no music, including no musical stingers or Chopin recordings.
+Open **Controls and settings** from preparation or pause. Keyboard, pointer, and a configured controller can navigate the editor. Gameplay and menu actions share the semantic action catalog but have separate contexts.
 
-The creative brief is confirmed; the populated documents distinguish it from **Proposed** names, narrative, mechanics, tuning, and production choices. **TBD** identifies unresolved decisions. The separate fictional president interpretation is proposed. Prototype checks do not establish final balance, full-game performance, physical-controller compatibility, or legal clearance.
+1. Select a keyboard/mouse or controller profile; duplicate and rename it if desired. Select the active controller when several are connected.
+2. Select an action, release the initiating input, then press the intended key/button, use a wheel direction, or deliberately move an axis and return it to neutral. Review the candidate before applying. **Keep existing alternatives** adds a binding rather than replacing the row.
+3. Resolve same-context conflicts with **Replace**, **Swap**, or **Cancel**. Essential navigation/confirmation/back controls cannot be left unbound. Clear optional actions or restore individual action/profile defaults as needed.
+4. During capture, tapping the current Back input can bind it; **hold Back for 1.2 seconds** to cancel. Pointer **Cancel** remains available. **Recover last working controls** restores the previous valid settings. Guided mapping saves each applied step; canceling it does not undo earlier applied steps.
+5. Under **Calibration & behavior**, preview inner/outer dead zones, movement gain, stick aiming response, axis inversion, trigger/menu thresholds, repeat timing, pointer aiming, and attack hold/toggle. Save to apply or cancel the draft. Choose automatic, PlayStation, Xbox, or generic prompts.
 
-## Documents
+Keyboard profiles explicitly choose **physical key position** or **character on the current layout**. Changing semantics converts the whole profile; verify the displayed bindings, especially when browser keyboard-layout access is unavailable and Latin fallback labels are used. Pointer aiming is absolute world targeting; aim sensitivity adjusts stick response.
+
+Settings use validated version 2 browser-local records plus a last-known-good backup. Profile reset preserves unrelated preferences. Invalid/incompatible data recovers a usable profile; unavailable storage leaves session-only controls and reports that limitation. Data belongs to this browser origin, so another browser, host, or port has separate settings. Clearing browser storage can remove it. Combat sessions are not saved.
+
+Nonstandard controllers use neutral button/axis labels and require guided mapping or explicit **Use this profile for this controller** before gameplay. Only browser-exposed inputs can be captured; reserved system buttons, motion sensors, touchpad gestures, and rumble are not mapped. Left-click activates visible UI controls; a mapped left-click menu action works on the menu background. Verify an unfamiliar controller in preparation before combat.
+
+The earlier user-reported physical result was **DualShock 4 over USB in Chrome**, without exact browser version, controller revision/firmware, or per-action checklist. Subsequent feel acceptance adds no hardware metadata. Milestone 2 needs fresh physical testing; DualShock Bluetooth and Xbox One/Series USB/Bluetooth remain unverified. Automated/simulated gamepad checks do not establish physical compatibility; see the [test matrix](docs/TECHNICAL_DESIGN.md#10-validation-and-compatibility-matrix).
+
+## Confirmed full-game scope
+
+The current prototype is a subset of these requirements:
+
+- One charming, funny adult Polish football hooligan with bright clothing and a prominent red-and-white scarf; an original fictional identity without recognizable likeness to the loose Karol Nawrocki reference.
+- Exactly three weapons: stylized FB MSBS Grot, boxing gloves, and Kolumna Zygmunta-inspired pillar; equal melee baseline sustained DPS and slightly lower rifle DPS.
+- Three biomes × three levels: boxing gym, football stadium, presidential palace. Boxers and a gym miniboss; hooligans and a stadium miniboss; clerks/lobbyists and a president final boss. Major encounters occupy existing levels.
+- Exactly seven power-up sources: Bóg, Ojczyzna, Orzeł Biały w koronie, Szacunek ulicy, Fryderyk Chopin, Maria Skłodowska-Curie, Mikołaj Kopernik.
+- 3D isometric top-down presentation, original modern Polish urban art, pleasant cartoon effects, and no music, musical stingers, or Chopin recordings.
+- Remappable keyboard/mouse and DualShock 4/Xbox controls; Windows desktop browsers first, other desktop systems later. USB/Bluetooth coverage needs exact-hardware validation. Prefer browser deployment and free tools with a code-first VS Code workflow.
+
+Documents distinguish **Confirmed** requirements, authorized adjustable prototype defaults, **Proposed** production choices, and **TBD** decisions. New names/story, detailed production mechanics/assets, and final balance remain reviewable. Prototype results do not establish full-game performance or legal clearance.
+
+## Documents and structure
 
 | Document | Purpose |
 | --- | --- |
-| [Technical design](docs/TECHNICAL_DESIGN.md) | Prototype boundaries, approved stack, future architecture, input design, risks, and milestones |
-| [Milestone 1 validation](docs/MILESTONE_1_VALIDATION.md) | Actual commands/results, browser conditions, initial measurements, limitations, and pending hardware checks |
-| [Game design draft](docs/GAME_DESIGN_TEMPLATE.md) | Player experience, fiction, weapons and balance, nine-level route, enemies, and power-up rules |
-| [Art and audio design draft](docs/ART_DESIGN_TEMPLATE.md) | Visual direction, animation, effects, non-musical audio, asset specifications, and production targets |
-| [Decisions and open questions](docs/DECISIONS_AND_OPEN_QUESTIONS.md) | Confirmed requirements, proposals, dependencies, and unresolved decisions |
-| [Collaboration](docs/COLLABORATION.md) | Setup status, Codex onboarding, branches, and publishing steps |
-| [Agent instructions](AGENTS.md) | Rules for future Codex work |
+| [Technical design](docs/TECHNICAL_DESIGN.md) | Architecture, input/storage, scope boundaries, compatibility, future milestones |
+| [Milestone 2 validation](docs/MILESTONE_2_VALIDATION.md) | Current checks, measured damage/performance, limitations, manual checklist |
+| [Milestone 1 validation](docs/MILESTONE_1_VALIDATION.md) | Historical prototype/refinement evidence |
+| [Game design](docs/GAME_DESIGN_TEMPLATE.md) | Authoritative gameplay, tuning, content IDs, and production proposals |
+| [Art and audio design](docs/ART_DESIGN_TEMPLATE.md) | Presentation, open visual comparisons, procedural boundary, future assets/audio |
+| [Decision register](docs/DECISIONS_AND_OPEN_QUESTIONS.md) | Requirements, authorizations, accepted feel, open production decisions |
+| [Collaboration](docs/COLLABORATION.md) and [agent instructions](AGENTS.md) | Setup/access status, branch workflow, authorized work |
 
-## Structure
+`src/game/` owns simulation/tuning, `src/input/` owns actions/settings/editor, `src/presentation/` builds the procedural scene, and `src/main.ts` integrates sessions/HUD. `tests/` covers rules, input/settings, and browser behavior; `docs/` owns design and evidence. Original `_TEMPLATE.md` filenames remain for stable links. `assets/` is reserved for later authorized production work. Dependencies, builds, browser reports, credentials, and private local data are excluded from commits.
 
-The `docs/` directory contains the design baseline and validation record. The populated game and art drafts retain their original `_TEMPLATE.md` filenames to preserve links. `src/game/` contains renderer-independent simulation and tuning, `src/input/` maps devices to actions, `src/presentation/` builds the procedural scene, and `src/main.ts` integrates the application and HUD. `tests/` verifies rules, input, and browser behavior. `assets/` is reserved for later authorized asset work; this prototype uses procedural geometry. Dependency folders, build output, browser reports, and local private files are not committed.
+## Development and next steps
 
-## Development workflow
+Work on exact-case **Dev**, the local working and GitHub default branch. **Main** holds reviewed baselines. Milestone 2 authorizes validated commits/pushes to Dev and updates to existing [PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2); leave it unmerged and Dev active/default. Preserve unrelated work and coordinate file ownership; one agent manages the shared Git index and remote writes. [Collaboration status](docs/COLLABORATION.md) records the separately pending collaborator invitation.
 
-Use the exact branch names `Dev` and `Main`. Both branches are published. `Dev` is the verified GitHub default and local working branch; `Main` holds reviewed baselines. The milestone 1 refinement authorization covers committing/pushing validated work on `Dev` and updating the existing [review PR #2 against Main](https://github.com/DezertInn/KrewetekBuldogul/pull/2); leave it unmerged and `Dev` active. There are no additional permanent branches. See [collaboration status](docs/COLLABORATION.md) for setup and remaining access decisions.
+Next, manually compare all three weapons, verify rebinding/recovery and DualShock USB safety, and review the [proposed visual choices](docs/ART_DESIGN_TEMPLATE.md#21-proposed-visual-review-after-milestone-1): palette, proportions, surface treatment, and animation character. Feel acceptance has not selected those alternatives. Milestone 3's run/content foundation requires a later explicit request; production assets/audio, paid services, public deployment, and merging Main remain outside current authorization.
 
-## Next steps
-
-1. The collaborator accepts the pending GitHub invitation, then active write access is verified; see [collaboration status](docs/COLLABORATION.md).
-2. Retest the tuned movement, glove reach, and punch speed, including DualShock 4 USB in Chrome; consult the [validation limitations](docs/MILESTONE_1_VALIDATION.md) and complete other available physical-controller checks without assuming the earlier manual pass covers this build.
-3. Review the [proposed visual brief](docs/ART_DESIGN_TEMPLATE.md#21-proposed-visual-review-after-milestone-1), following dissatisfaction with placeholder colors, animations, textures, and character design. Resolve palette, silhouette, surface, and animation direction before authorizing production assets; other [design questions](docs/DECISIONS_AND_OPEN_QUESTIONS.md#prioritized-open-questions) remain open.
-4. After review, explicitly authorize milestone 2: complete gameplay/menu rebinding and recovery, all three weapon behaviors, and comparable combat measurements. Later work is not authorized by the milestone 1 request.
-
-Project licensing is TBD. No project license or rights to third-party assets have been selected by this setup.
+Project licensing and targeted production rights questions remain TBD; no third-party asset rights are granted by this repository.
