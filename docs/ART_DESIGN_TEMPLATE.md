@@ -2,13 +2,13 @@
 
 **Document status:** Populated design draft v0.1. Creative requirements are confirmed; detailed production choices await review.
 
-**Prepared:** 2026-10-09. **Art approval owner:** TBD. No assets have been created or approved for production.
+**Prepared:** 2026-10-09. **Art approval owner:** TBD. Milestone 1 uses separately authorized procedural placeholders; no production assets are approved.
 
 ## 1. Scope and status
 
 **Confirmed** identifies the user's requirements. **Proposed** identifies recommendations, including every new name, palette, dimension, asset budget, animation treatment and production method below. **TBD** identifies a decision needing further input. Unless a paragraph or table explicitly says Confirmed, it describes a Proposed starting point.
 
-This document owns presentation, audio direction and asset specifications. [Game Design](GAME_DESIGN_TEMPLATE.md) owns narrative, abilities, attack timings, power-up effects, enemy behavior and balance. [Technical Design](TECHNICAL_DESIGN.md) owns architecture, global performance targets and compatibility. Shared decisions and the prioritized questions live in [Decisions and Open Questions](DECISIONS_AND_OPEN_QUESTIONS.md). This draft authorizes no implementation or asset generation.
+This document owns presentation, audio direction and asset specifications. [Game Design](GAME_DESIGN_TEMPLATE.md) owns narrative, abilities, attack timings, power-up effects, enemy behavior and balance. [Technical Design](TECHNICAL_DESIGN.md) owns architecture, global performance targets and compatibility. Shared decisions and the prioritized questions live in [Decisions and Open Questions](DECISIONS_AND_OPEN_QUESTIONS.md). The user separately authorized milestone 1's original procedural placeholders; this draft does not authorize production assets or later milestones.
 
 | Area | Confirmed creative requirement |
 | --- | --- |
@@ -19,7 +19,7 @@ This document owns presentation, audio direction and asset specifications. [Game
 | Power-up sources | Exactly seven: Bóg, Ojczyzna, Orzeł Biały w koronie, Szacunek ulicy, Fryderyk Chopin, Maria Skłodowska-Curie, Mikołaj Kopernik. |
 | Sound | Pleasant, cartoonish sound effects. No music, including musical reward stingers or Chopin recordings. |
 | Input and delivery | Remappable gameplay and menu actions for keyboard/mouse, DualShock 4 and Xbox One/Series; USB/Bluetooth validation on compatible hardware. Windows desktop browsers first; other desktop systems later. |
-| Workflow | Free tools and code-first development through Codex in VS Code. TypeScript + Babylon.js remains provisional; no tool installation or engine project in this phase. |
+| Workflow | Free tools and code-first development through Codex in VS Code. TypeScript + Babylon.js + Vite and free project/test tooling are approved for milestone 1; production assets remain outside authorization. |
 
 ## 2. Visual direction
 
@@ -236,7 +236,7 @@ Load lightweight UI for all three weapon choices, then the shared hero, selected
 
 ## 13. Prioritized asset inventory
 
-These are specifications, not produced assets. After explicit implementation authorization, **P0** validates the pipeline, **P1** covers initial content, **P2** is optional polish needing review. The review slice is not authorization to build it now.
+These are future production specifications, not produced assets. Milestone 1 authorizes original procedural placeholders only. After separate production authorization, **P0** validates the pipeline, **P1** covers initial content, **P2** is optional polish needing review. The production inventory below is not authorization to build it now.
 
 | Priority / inventory ID | Deliverable and content mapping | Approval criterion |
 | --- | --- | --- |
@@ -261,7 +261,7 @@ Targeted matters **TBD** before public asset distribution: possible unwanted ide
 
 | Future review | Evidence needed | Current result |
 | --- | --- | --- |
-| Character/weapons | Actual-camera eight-facing images, grayscale checks, recognition in crowded scenes. | Not tested; no assets. |
+| Character/weapons | Actual-camera eight-facing images, grayscale checks, recognition in crowded scenes. | Production-art checks pending; procedural prototype checks are separate. |
 | Enemy/boss fairness | Every GDD anticipation/vulnerable state readable with muted audio, reduced effects and overlaps. | Not tested. |
 | Nine-level coverage | Each level ID with landmarks, navigation, occlusion and kit reuse. | Documented plan only. |
 | UI/controls | Gameplay/menu remapping, device switching, prompts and Polish glyphs at minimum viewport/UI scale. | Not tested. |

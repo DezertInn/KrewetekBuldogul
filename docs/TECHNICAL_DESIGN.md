@@ -1,14 +1,26 @@
 # KrewetekBuldogul — Technical Design
 
-Status: technical design draft aligned with the first populated game and art designs; no implementation authorized in this phase.
+Status: milestone 1 implementation authorized on 2026-10-09; broader architecture remains a design proposal. See the [milestone validation report](MILESTONE_1_VALIDATION.md) for actual checks and limitations.
 
 Prepared: 2026-10-09.
 
-Technology recommendation: **TypeScript + Babylon.js**, subject to a browser performance slice; real-time 3D graphics with a fixed isometric/top-down presentation.
+Approved milestone 1 stack: **TypeScript + Babylon.js + Vite**; real-time 3D graphics with a fixed isometric/top-down presentation. Production suitability remains subject to measured performance and compatibility.
 
 ## 1. Scope and decision status
 
-This document describes a feasible browser game architecture and the questions that must be resolved before implementation. It is a design proposal, not a claim that systems, compatibility, or performance have already been implemented or tested. The project currently contains documentation and directory structure only.
+This document describes the browser game architecture and distinguishes the authorized prototype from future systems. Milestone 1 covers one gym room, one procedural player with a red-and-white scarf, boxing-glove attacks, a resettable training dummy, initial keyboard/mouse/gamepad actions, and validation. It does not implement the full game. Detailed balance values remain **Proposed**, used only as adjustable prototype defaults under the user's authorization.
+
+### Milestone 1 implementation boundary
+
+| Module | Milestone responsibility |
+| --- | --- |
+| [Simulation types](../src/game/types.ts) and [configuration](../src/game/config.ts) | Plain state/action contracts and editable prototype tuning |
+| [Simulation](../src/game/simulation.ts) | Fixed-step movement, planar collision, dash, four-strike glove timing, and per-strike target damage |
+| [Input actions](../src/input/controls.ts) | Editable physical bindings, semantic actions, standard-mapped Gamepad API input, device status, and release gates across menu/focus transitions |
+| [Presentation](../src/presentation/scene.ts) | Original procedural geometry/materials, orthographic camera, player/scarf/gloves, dummy, and visual feedback |
+| [Application](../src/main.ts) | Browser lifecycle, loading/errors, start/pause/restart flow, HUD, and simulation/render integration |
+
+Full rebinding UI, rifle/pillar implementation, enemies/bosses, nine-level content, upgrades, persistence, production art/audio, and public hosting are deferred. Audio is intentionally absent in this slice. Standard gamepad mapping is the initial implementation boundary; unknown mappings need an explicit diagnostic rather than a guessed layout. The [README](../README.md) owns launch commands and prototype controls. The [validation report](MILESTONE_1_VALIDATION.md) owns exact installed versions, test outcomes, observed performance, and unverified physical-controller combinations.
 
 **Confirmed** means explicitly required by the project brief. **Proposed** means a recommended starting point requiring design review. **TBD** means intentionally unresolved. Unless identified as confirmed or as an externally documented platform fact, the architecture and budgets below are proposed.
 
@@ -34,7 +46,7 @@ Use [decisions and open questions](DECISIONS_AND_OPEN_QUESTIONS.md) to approve o
 
 ### 2.1 Options
 
-The comparison separates documented capabilities from engineering judgment. Relative workflow and project-fit assessments are recommendations, not measured performance results. Documentation was checked on 2026-10-09; exact compatible dependency versions must be selected and pinned when implementation is authorized.
+The comparison records the rationale for the approved milestone 1 stack. Relative workflow and project-fit assessments are engineering judgments, not measured performance results. Documentation was checked on 2026-10-09. Exact versions are recorded in [package.json](../package.json), transitive dependencies in [package-lock.json](../package-lock.json), and verified tooling in the [validation report](MILESTONE_1_VALIDATION.md).
 
 | Option | Documented capabilities | Project-fit assessment and tradeoffs |
 | --- | --- | --- |
@@ -48,19 +60,19 @@ All three engine/framework options can be evaluated without purchasing an engine
 
 ### 2.2 Recommendation and reversal criteria
 
-Recommend **TypeScript + Babylon.js**, with a conventional static web build and a lightweight build tool selected later. The recommendation follows the clarified 3D presentation and code-first workflow; it remains subject to the first performance/compatibility slice. Keep the current repository engine-neutral: do not install packages, generate configuration, or create a starter game during this phase.
+The user approved **TypeScript + Babylon.js + Vite** for milestone 1, with a conventional static web build. This follows the clarified 3D presentation and code-first workflow. Project dependencies, configuration, source, and validation tools are authorized for this slice; this does not approve production assets or later milestones.
 
 The proposed implementation uses real-time 3D models, materials, lighting, and animation viewed through a fixed orthographic camera. Movement and hit resolution stay on a 2D ground plane; visual height does not imply jumping, free camera rotation, or full 3D physics. This is our technical interpretation of the requested Hades II-style presentation, not a verified description of that game's engine. TypeScript should make data contracts and agent-authored changes reviewable in VS Code.
 
 Propose WebGL 2 as the initial rendering baseline; evaluate WebGPU later without making it a minimum requirement. Author scene composition and level definitions in text so Codex can edit them from VS Code. Keep optional inspectors as diagnostic tools, not required sources of hidden project state. Imported production art will still need an agreed free asset-authoring process; code generation alone does not guarantee finished character animation or final art quality.
 
-Revisit the choice before implementation if:
+Revisit the production choice after the prototype if:
 
 - Browser 3D performance or the required animation pipeline proves unsuitable: compare Babylon.js with Godot using the same representative encounter.
 - The collaborators change their workflow preference and native desktop becomes equally important: favor a Godot evaluation.
 - Target hardware, browser coverage, or art density cannot meet the proposed budgets: test a representative slice before committing to a production pipeline.
 
-Select one tested release of the chosen engine with matching documentation rather than mixing tutorials and APIs across versions. No exact release is pinned in this planning-only repository.
+Select tested releases with matching documentation rather than mixing tutorials and APIs across versions. Commit exact direct dependency versions and the npm lockfile; verify installation with `npm.cmd ci`. Use `npm.cmd` in Windows PowerShell where the `npm.ps1` wrapper is blocked by execution policy, without changing machine policy.
 
 ## 3. System responsibilities and boundaries
 
@@ -83,7 +95,7 @@ Example interaction: a bound physical input becomes an Attack action; the simula
 
 Propose a 60 Hz fixed simulation step with rendering independent of simulation frequency. Read current input before the next simulation step; retain edge events until consumed so quick presses are not lost. Limit catch-up work after a long stall; pause on hidden/unfocused gameplay and require explicit resume. A reproducible content seed is useful for debugging, but cross-browser bit-for-bit simulation determinism is not promised.
 
-For implementation, subdivide future source only as needed into application, gameplay, input, content, presentation, persistence, and platform responsibilities. The current empty source/assets/tests directories do not commit to a framework-specific layout.
+Milestone 1 implements only the simulation, input, presentation, and application boundaries listed above. It runs at 60 Hz, buffers attack/dash edges until the next simulation step, and clamps accumulated elapsed time per rendered frame to 0.10 seconds. The production catch-up target in section 9 remains Proposed. Subdivide future source into content, persistence, or directors only when the corresponding milestone is authorized; do not scaffold unneeded systems now.
 
 ## 4. Character, combat, and weapons
 
@@ -149,7 +161,7 @@ Use a consistent hierarchy: a **biome** groups levels with a shared setting and 
 | Enemy / major encounter | Stable ID, behavior/phase configuration, attack IDs, collision dimensions, telegraph/vulnerability presentation IDs, reward references |
 | Weapon / upgrade | Canonical GDD ID, supported actions/triggers, simulation definitions and presentation references |
 
-The [GDD content registry and nine-level overview](GAME_DESIGN_TEMPLATE.md) are authoritative for IDs and progression. The current configuration contains `B01` boxing gym with `B01L01`–`B01L03`, `B02` football stadium with `B02L01`–`B02L03`, and `B03` presidential palace with `B03L01`–`B03L03`. The proposed ordinary rosters use `B01_E01`–`B01_E03`, `B02_E01`–`B02_E03`, and `B03_E01`–`B03_E03`; these roster sizes are proposals. The two miniboss IDs are `B01_M01` and `B02_M01`; the final boss ID is `B03_B01`. Proposed placement attaches them to their biome's third level. Their display/narrative names are not save keys.
+The [GDD content registry and nine-level overview](GAME_DESIGN_TEMPLATE.md) are authoritative for IDs and progression. The designed production configuration contains `B01` boxing gym with `B01L01`–`B01L03`, `B02` football stadium with `B02L01`–`B02L03`, and `B03` presidential palace with `B03L01`–`B03L03`; this route is not implemented in milestone 1's standalone test room. The proposed ordinary rosters use `B01_E01`–`B01_E03`, `B02_E01`–`B02_E03`, and `B03_E01`–`B03_E03`; these roster sizes are proposals. The two miniboss IDs are `B01_M01` and `B02_M01`; the final boss ID is `B03_B01`. Proposed placement attaches them to their biome's third level. Their display/narrative names are not save keys.
 
 Store relationships by ID rather than array position. Validate missing/duplicate references, unreachable exits, incompatible encounter/room combinations, reward duplication, and impossible route constraints before loading gameplay. A project-specific content check must enforce the current three-biome, three-levels-each, nine-level configuration and the two-miniboss/one-final-boss totals. The underlying loader and route traversal accept variable-length collections; future expansion requires a deliberate content-scope change and updated validation, not magic numbers spread through gameplay code.
 
@@ -232,7 +244,7 @@ Propose native HTML controls for settings and other text-heavy menus where pract
 
 Provide UI scaling, high-contrast focus, cues that do not rely solely on color, separate Master/Effects/UI/Ambience levels, readable subtitles if dialogue is added, and reduced screen shake/flashing. Every attack telegraph, upgrade trigger, reload state, and boss vulnerability needs a visual equivalent when sound is muted. Aim assistance, difficulty assists, and game-speed options remain GDD proposals requiring review and playtesting across input devices. Store preference changes separately from run state.
 
-The [art design draft](ART_DESIGN_TEMPLATE.md) now specifies the original modern Polish urban direction, character/scarf treatment, three environment kits, and weapon/enemy/boss presentation. Detailed specifications and budgets remain proposals awaiting validation; no assets are produced in this phase. Proposed asset pipeline:
+The [art design draft](ART_DESIGN_TEMPLATE.md) specifies the original modern Polish urban direction, character/scarf treatment, three environment kits, and weapon/enemy/boss presentation. Detailed specifications and budgets remain proposals awaiting validation. Milestone 1 uses original procedural placeholder geometry and materials; production assets remain outside authorization. Proposed future asset pipeline:
 
 1. Keep editable source assets separate from runtime exports. Use stable asset IDs and lowercase descriptive filenames; never couple narrative names to save IDs.
 2. Use the art document's proposed units, axis/handedness conversion, origin points, rigs, clip names, attachment sockets, material conventions, and attack cue readability before volume production. Combat timing remains simulation-owned: attack start/active/recovery/cancel/reload events drive animation state and optional sound/VFX. Retiming a clip cannot move a damage window or ammo refill. If an accepted modifier changes attack speed, derive both gameplay and presentation from the same scaled timeline. Animation blending, a skipped render frame, or replayed visual markers must not duplicate events. Cosmetic scarf motion and the pillar's exaggerated silhouette never enlarge collision or create independent damage.
@@ -251,7 +263,7 @@ Hidden pages can have animation callbacks suspended or timers throttled; pause t
 
 ## 9. Proposed performance targets
 
-These are initial acceptance budgets, **not measured results or engine guarantees**. Before the implementation slice, record one actual Windows laptop with an integrated GPU, at least 8 GB RAM, its CPU/GPU model, OS, browser version, power mode, and display refresh rate. Review the budgets against representative 3D art and animation before content production.
+These are initial acceptance budgets, **not measured results or engine guarantees**. Prototype observations and available machine/browser conditions belong in the [validation report](MILESTONE_1_VALIDATION.md). Before production acceptance, record one actual Windows laptop with an integrated GPU, at least 8 GB RAM, its CPU/GPU model, OS, browser version, power mode, and display refresh rate. Review the budgets against representative 3D art and animation before content production.
 
 | Area | Proposed target and measurement |
 | --- | --- |
@@ -267,9 +279,9 @@ These are initial acceptance budgets, **not measured results or engine guarantee
 
 Define a reproducible stress encounter from the proposed GDD roster and compatible power-up combinations, with enemy/projectile/VFX counts and the selected weapon recorded separately from production encounter counts. Include the pillar's area hit, fast glove/rifle feedback, an effect-heavy build, and major-encounter telegraphs; use controlled scenarios rather than requiring every effect and boss simultaneously. Pool short-lived objects if profiling demonstrates allocation pressure; use mesh instancing, shared materials, limited transparent overdraw, reduced shadows, and effects quality tiers before compromising gameplay timing. Input sampling, hit detection, and readable attack cues take precedence over decorative effects.
 
-## 10. Future validation and compatibility matrix
+## 10. Validation and compatibility matrix
 
-No implementation tests can run during this documentation-only phase. The following are future acceptance criteria, not completed checks.
+Milestone 1 requires type checking, meaningful simulation/input tests, a production build, lockfile-install verification, and actual browser smoke checks. Exercise movement/aim, collision, attack/damage, dash, pause/resume, restart, resize, and lifecycle recovery; record runtime errors and measured conditions in the [validation report](MILESTONE_1_VALIDATION.md). The broader table below is a future acceptance plan, not a list of completed systems or checks.
 
 | Layer | High-value validation |
 | --- | --- |
@@ -290,24 +302,24 @@ For **every approved OS/browser combination**, record the following rows separat
 
 | Input configuration | Required checks | Current status |
 | --- | --- | --- |
-| Keyboard + mouse | Non-US keyboard layout, alternate buttons/wheel, menu-only keyboard use, browser reserved shortcuts | Untested |
+| Keyboard + mouse | Non-US keyboard layout, alternate buttons/wheel, menu-only keyboard use, browser reserved shortcuts | Prototype checks are recorded separately; full remapping/layout matrix remains pending |
 | DualShock 4 over USB | Mapping, both sticks/triggers, complete remapping, prompts, cold connection, disconnect/reconnect | Untested |
 | DualShock 4 over Bluetooth | Same tests; reconnect after sleep; record adapter/OS behavior | Untested |
 | Xbox One controller over USB | Same mapping/rebinding/lifecycle tests; record exact hardware revision | Required family; revision TBD; untested |
 | Xbox One controller over Bluetooth | Same tests using a Bluetooth-capable revision; verify device capability before enrollment | Required transport on compatible hardware; revision TBD; untested |
 | Xbox Series controller over USB | Same mapping/rebinding/lifecycle tests; record exact hardware revision | Required family; revision TBD; untested |
 | Xbox Series controller over Bluetooth | Same tests plus reconnect after sleep; record firmware and Bluetooth adapter | Required transport; revision TBD; untested |
-| Multiple devices connected | Controller selection, keyboard/controller switching, no double actions, profile isolation | Untested |
+| Multiple devices connected | Controller selection, keyboard/controller switching, no double actions, profile isolation | Simulated lifecycle checks are separate from pending physical-device/profile validation |
 
 Automated browser tests can exercise synthetic actions and menu flows, but they do not replace physical controller checks. Record tester, date, exact device/model, firmware when known, transport, OS, browser, build ID, observed mapping, result, and limitations. Verify Bluetooth capability for each Xbox One hardware revision; a device lacking that radio cannot meet a Bluetooth test through software remapping. Mark unsupported combinations clearly rather than treating an untested row as passed. Proprietary Xbox wireless adapters are a separate optional transport, not a substitute for the required Bluetooth coverage.
 
 ## 11. Build and hosting proposal
 
-When implementation is authorized, use a reproducible static build with a pinned runtime/toolchain, lockfile, type checks, game-rule tests, content validation, and a production build check. Expose install, development server, checks, and build through documented commands usable from the VS Code terminal and Codex. The first slice must demonstrate that project setup and ordinary development do not require a separate scene editor. Serve versioned local dependencies and hashed assets; avoid relying on an unpinned runtime CDN. Keep save/content compatibility separate from cache versions.
+Milestone 1 uses a reproducible Vite static build, exact dependency versions and lockfile, type checks, game-rule/input tests, a production build check, and browser smoke tests. The [README](../README.md#run-locally) documents install, development, checks, and preview commands. Ordinary development needs no separate scene editor. Serve bundled dependencies and hashed build assets without a runtime CDN. Future save/content compatibility remains separate from cache versions.
 
 **Proposed first host: GitHub Pages** for a static browser build; it serves HTML, CSS, and JavaScript from a repository and is available for public repositories on GitHub Free. [GitHub Pages documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
 
-Use `Dev` for ongoing work and reviewed promotion to `Main` for a release candidate, following [collaboration workflow](COLLABORATION.md). A later deployment workflow can publish build artifacts from reviewed `Main` without adding a permanent branch. Configure the actual repository subpath and test deep asset URLs. Hosting is a proposal only; this phase creates no workflow, executable build, or deployed game.
+Use `Dev` for ongoing work and reviewed promotion to `Main` for a release candidate, following [collaboration workflow](COLLABORATION.md). The authorized milestone ends with a pushed `Dev` commit and an unmerged review PR against `Main`, with `Dev` active. A later deployment workflow could publish build artifacts from reviewed `Main` without adding a permanent branch; configure the actual repository subpath and test deep asset URLs then. Milestone 1 permits local development/preview and a build artifact only: no public deployment or hosting workflow is authorized.
 
 Prefer first-party HTTPS hosting for the first compatibility pass. Embedded distribution is a later test target because focus, controller permissions, storage, and fullscreen behavior may differ. If Godot with threads is selected, reassess the host's cross-origin isolation support before choosing that export mode. Keep production saves distinct from development origins; do not promise automatic transfer between them.
 
@@ -330,11 +342,11 @@ PWA/offline caching, custom domains, analytics, and remote services need separat
 
 | Milestone | Deliverable and exit condition |
 | --- | --- |
-| 0 — Current planning phase | Populated game/art drafts and aligned technical/supporting documents; exact content scope, measurable weapon benchmark, seven-source sample system, no-music direction, and unresolved decisions; no game implementation |
-| 1 — Technical slice, after explicit implementation request | Validate Babylon.js recommendation and orthographic 3D interpretation; one character with placeholder movement/attack on a 2D plane; one 3D test room; keyboard/mouse, DualShock 4, Xbox One and Series over required transports; initial Windows browser compatibility and performance measurements |
+| 0 — Design baseline | Populated game/art drafts and aligned technical/supporting documents; exact content scope, measurable weapon benchmark, seven-source sample system, no-music direction, and unresolved decisions |
+| 1 — Authorized technical slice | One procedural gym room/player, movement/aim/dash/collision, boxing-glove attacks and dummy, initial keyboard/mouse and standard gamepad actions, safe start/pause/restart; type checks, simulation/input tests, build, lockfile install, browser smoke, observed performance. Record unavailable physical-controller/browser checks explicitly; they remain pending rather than blocking independently verifiable work |
 | 2 — Input and combat foundation | Complete gameplay/menu action mapping, rebinding and recovery; all three proposed weapon behaviors and benchmark measurement; pause/disconnect/focus robustness; readable enemy encounter |
 | 3 — Run and content foundation | Distinct biome/level/room/encounter data with the nine-level configuration; versioned safe checkpoints, upgrade definitions/order/weighted triggers, stable reward offers, transitions, results, and failure recovery |
 | 4 — Representative vertical slice | The GDD's proposed playable subset with original 3D art and non-musical audio; selected upgrades and a major encounter; measured stress, loading, and controller results against the acceptance targets |
 | 5 — Production and release preparation | Complete the confirmed nine levels, two minibosses, and final boss; agree the final upgrade count separately from samples; balance/accessibility passes; validate saves/hosting; review release candidate from `Dev` into `Main` |
 
-No milestone beyond phase 0 authorizes work now. Re-estimate production after design review and the first measured slice; proposed art specifications, baseline hardware, browser versions, and tuning still need validation. No gameplay, controller, performance, balance, or rights-clearance test is claimed by this document.
+Only milestone 1 is currently authorized. Milestones 2–5 need a later implementation request. Re-estimate production after design review and measured prototype results; proposed art specifications, baseline hardware, browser versions, and final tuning still need validation. Consult the [validation report](MILESTONE_1_VALIDATION.md) for evidence; arithmetic, automated/simulated input, browser checks, physical hardware, and rights clearance remain distinct categories.

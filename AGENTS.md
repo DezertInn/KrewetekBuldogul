@@ -2,7 +2,9 @@
 
 ## Current authorization
 
-This project is in setup and documentation phase. Do not implement gameplay, generate an engine project, install engine dependencies, generate production assets, or deploy an application until the user explicitly requests a later implementation task. Git/repository administration and design documentation are within the setup scope.
+The user authorized milestone 1 on 2026-10-09: a TypeScript + Babylon.js + Vite playable technical prototype with one gym room, one placeholder character, boxing-glove attacks, a training dummy, initial keyboard/mouse/gamepad input, and validation. Free project dependencies, test tools, local servers, and original procedural placeholders are authorized. Existing Proposed tuning may be used as adjustable prototype defaults, not final approved balance.
+
+Commit validated work on `Dev`, push to `origin/Dev`, and open a review PR against `Main`; leave it unmerged and `Dev` active. Use normal environment approvals where required. Later milestones, full rebinding UI, the full three-weapon system, production assets, public deployment, and paid services remain outside this authorization. Preserve all other rules below.
 
 ## Sources of truth
 
@@ -44,4 +46,4 @@ Keep these documents consistent. Use UTF-8 Markdown and relative links within th
 
 ## Verification
 
-For this phase, check file scope, relative links, requirement coverage, and cross-document consistency. There is no runnable application or test suite; do not claim gameplay, performance, or controller support has been tested. After implementation is authorized, select meaningful checks for the actual change and document the results.
+For milestone 1, run type checking, meaningful simulation/input tests, production build, lockfile install verification, and actual browser smoke checks. Document measured performance with conditions. Label simulated gamepad checks separately from physical Xbox One/Series and DualShock 4 USB/Bluetooth checks; never claim unavailable hardware was tested. Check file scope, relative links, requirement coverage, and cross-document consistency. Exclude generated artifacts and private data from commits.

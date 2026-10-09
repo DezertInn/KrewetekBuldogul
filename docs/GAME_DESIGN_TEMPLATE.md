@@ -1,6 +1,6 @@
 # KrewetekBuldogul — Game Design Draft
 
-**Document status:** First populated design draft, 2026-10-09. The supplied creative brief is **Confirmed**; all names, story details, mechanics, quantities beyond that brief, and numerical tuning below are **Proposed** unless explicitly marked otherwise. **TBD** identifies an unresolved decision. No implementation or playtest has occurred.
+**Document status:** First populated design draft, 2026-10-09. The supplied creative brief is **Confirmed**; all names, story details, mechanics, quantities beyond that brief, and numerical tuning below are **Proposed** unless explicitly marked otherwise. **TBD** identifies an unresolved decision. Milestone 1 is separately authorized; the [validation report](MILESTONE_1_VALIDATION.md) records prototype checks without establishing final balance or full-game playtesting.
 
 **Design owner / approval:** TBD. This document owns gameplay rules, content IDs, and balance values. [Art Design](ART_DESIGN_TEMPLATE.md) owns presentation specifications; [Technical Design](TECHNICAL_DESIGN.md) owns architecture and platform validation. Cross-document decisions and prioritized open questions belong in the [decision register](DECISIONS_AND_OPEN_QUESTIONS.md). The existing filename is retained for link compatibility.
 
@@ -20,9 +20,9 @@
 | Audio | Cartoonish, pleasant sound effects; no music |
 | Inputs | Customizable gameplay and menu actions on keyboard/mouse, DualShock 4, and Xbox One/Series; controller USB/Bluetooth validation on compatible hardware |
 | Delivery and workflow | Browser deployment preferred; Windows desktop browsers first, other desktop systems later; free tools and a code-first Codex in VS Code workflow |
-| Current authorization | Documentation only; no game code, engine scaffold, dependencies, assets, or deployment |
+| Current authorization | Milestone 1 technical prototype only: TypeScript/Babylon.js/Vite, one procedural gym/player, boxing gloves/dummy, initial input, and validation. Proposed tuning is adjustable; later milestones, production assets, and deployment remain outside scope |
 
-One local player, a fixed orthographic camera, and TypeScript + Babylon.js remain proposals. Multiplayer, accounts, cloud saves, mobile/touch input, native builds, and a licensed real-person portrayal are not requirements. References do not authorize copying Hades characters, narrative, compositions, UI, or assets, and do not establish how Hades II renders internally.
+One local player, a fixed orthographic camera, and TypeScript + Babylon.js + Vite are approved for milestone 1; broader production design remains subject to review. Multiplayer, accounts, cloud saves, mobile/touch input, native builds, and a licensed real-person portrayal are not requirements. References do not authorize copying Hades characters, narrative, compositions, UI, or assets, and do not establish how Hades II renders internally.
 
 ## 2. Vision and experience
 
@@ -306,7 +306,7 @@ The authoritative SFX event inventory, variations, repetition limits, priorities
 
 ## 12. Scope and future playtest plan
 
-All stages beyond this draft need explicit implementation authorization. A first playable is a validation subset, not a reduction of the confirmed eventual nine-level scope. No gameplay, controller, performance, balance, rights, or legal-clearance result is claimed here.
+Milestone 1 has explicit implementation authorization; later stages need a separate request. The first playable is a validation subset, not a reduction of the confirmed eventual nine-level scope. This design document is not validation evidence; consult the [milestone report](MILESTONE_1_VALIDATION.md) for prototype results and outstanding checks. Production balance and rights clearance remain unestablished.
 
 | Proposed stage | Content and question to resolve |
 | --- | --- |
@@ -317,7 +317,7 @@ All stages beyond this draft need explicit implementation authorization. A first
 
 | Future question | Scenario / proposed acceptance criterion | Evidence status |
 | --- | --- | --- |
-| Does baseline damage meet the relationship? | Zero-defense stationary target; exact 12 s complete cycles yield 1,080/1,200/1,200 for rifle/gloves/column; log every phase and reload; no upgrades or assists | Calculations checked in documentation only; no runtime result |
+| Does baseline damage meet the relationship? | Zero-defense stationary target; exact 12 s complete cycles yield 1,080/1,200/1,200 for rifle/gloves/column; log every phase and reload; no upgrades or assists | Full three-weapon comparison remains unimplemented; milestone 1 checks only gloves, as recorded in its validation report |
 | Do interrupts preserve honest timing? | Cancel every startup/recovery/reload boundary; no phantom hit, ammunition refill, Impact credit, or shortened next-cycle start | Untested |
 | Are weapons viable beyond a dummy? | Each weapon completes the same seeded route without upgrades and with matched budgets; compare uptime, damage taken, overkill, crowd damage, and reload/cancel behavior before setting a win-rate tolerance | Untested; participant count and final tolerance TBD |
 | Are upgrade combinations bounded? | Exercise all 21 effects individually, the identified synergy pairs, and an eight-effect stress build; no recursive proc, duplicate reward, over-cap stack, or multiple column Impact awards per sweep | Untested |
