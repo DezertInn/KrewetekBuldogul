@@ -13,10 +13,11 @@ Verification date: 2026-10-09 (Europe/Warsaw).
 | Public GitHub repository | [DezertInn/KrewetekBuldogul](https://github.com/DezertInn/KrewetekBuldogul); GitHub metadata confirms public visibility and repository owner `DezertInn` |
 | Remote `Main` and `Dev` | Both case-sensitive branches are published with the initial documentation baseline; remote refs verified |
 | Remote default `Dev` | Confirmed from GitHub repository metadata |
-| Git write access | A successful push to `origin` demonstrated local Git write access. The identity of the currently authenticated GitHub account was not independently verified |
+| Git write access | A successful push to `origin` demonstrated local Git write access. Authenticated GitHub API checks confirmed the signed-in account is repository owner `DezertInn` with administrator access |
+| GitHub plugin | Installation confirmed; its GitHub tools were not available in this chat. The invitation below used the existing local GitHub sign-in |
 | OpenAI sharing | Available sharing tools manage ChatGPT Pages/Spaces; they do not establish shared access to this local Codex folder |
-| GitHub collaborator access | Pending a separately confirmed GitHub identity if write access is required |
-| Invitations | None sent or accepted as part of this setup |
+| GitHub collaborator access | User confirmed [loszavera](https://github.com/loszavera); GitHub verified the account. Write access is pending invitation acceptance |
+| Invitations | Write-access invitation sent to `loszavera` on 2026-10-09 and verified as pending through GitHub. Active write access has not been granted yet |
 
 Do not treat this file's intended workflow as evidence that a remote operation has succeeded.
 
@@ -39,10 +40,10 @@ The initial documentation baseline should exist on both branches. Subsequently, 
 
 ## Remaining collaboration setup
 
-Repository publication and the two-branch setup are complete. The verified clone URL is `https://github.com/DezertInn/KrewetekBuldogul.git`. Local Git can push through the configured authentication workflow; a ChatGPT/Codex GitHub plugin is optional and is not required for this workflow. No plugin connection has been verified as part of this setup.
+Repository publication and the two-branch setup are complete. The verified clone URL is `https://github.com/DezertInn/KrewetekBuldogul.git`. Local Git can push through the configured authentication workflow. The GitHub plugin is installed, but its connection and repository permissions have not been independently verified through plugin tools; it was not needed to send this invitation.
 
-1. If the collaborator needs write access, confirm their exact GitHub username and the intended access level. An OpenAI account email does not establish a GitHub identity.
-2. Invite that confirmed GitHub account through the repository's normal access-management flow. Record an invitation as pending until GitHub confirms acceptance; no invitation has been sent by this setup.
+1. The collaborator should sign in as `loszavera` and [accept the repository invitation](https://github.com/DezertInn/KrewetekBuldogul/invitations).
+2. After acceptance, verify active write access through GitHub. The verified status for this setup is still pending; a sent invitation does not establish active access.
 3. Each collaborator should authenticate using their own account and clone the repository. Do not exchange or publish access tokens or private account contact details.
 4. If a separate shared OpenAI resource is wanted, first identify a supported sharing destination. Repository access does not establish shared access to this local Codex folder or its conversations.
 
