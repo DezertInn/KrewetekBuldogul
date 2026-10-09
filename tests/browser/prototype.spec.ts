@@ -89,6 +89,30 @@ test('playable production build: movement, aiming, attacks, dash, safety, reset 
   expect(errors).toEqual([]);
 });
 
+test('refined glove reach connects beyond the old limit and misses beyond the new limit', async ({ page }, info) => {
+  await openGym(page);
+  await page.keyboard.press('Enter');
+  await expect.poll(async () => (await snapshot(page)).mode).toBe('playing');
+  await page.keyboard.down('w'); await page.keyboard.down('d');
+  await page.waitForFunction(() => (window as any).__prototype.snapshot().player.position.z >= -1.28);
+  await page.keyboard.up('w'); await page.keyboard.up('d');
+  const inReach = await snapshot(page);
+  const distance = Math.hypot(inReach.player.position.x - inReach.dummy.position.x, inReach.player.position.z - inReach.dummy.position.z);
+  expect(distance).toBeGreaterThan(1.5 + inReach.dummy.radius);
+  expect(distance).toBeLessThan(1.95 + inReach.dummy.radius);
+  const target = await page.evaluate(() => (window as any).__prototype.project((window as any).__prototype.snapshot().dummy.position));
+  await page.mouse.click(target.x, target.y);
+  await expect.poll(async () => (await snapshot(page)).damageTotal).toBe(20);
+  await page.screenshot({ path: info.outputPath('refined-reach.png') });
+  await page.keyboard.down('s'); await page.keyboard.down('a');
+  await page.waitForFunction(() => (window as any).__prototype.snapshot().player.position.z <= -1.65);
+  await page.keyboard.up('s'); await page.keyboard.up('a');
+  const outOfReach = await snapshot(page);
+  expect(outOfReach.dummy.position.z - outOfReach.player.position.z).toBeGreaterThan(1.95 + outOfReach.dummy.radius);
+  await page.mouse.click(target.x, target.y); await delay(page, 350);
+  expect((await snapshot(page)).damageTotal).toBe(20);
+});
+
 test('simulated standard controller: menus, analog input, disconnect and held-attack gate', async ({ page }) => {
   await page.addInitScript(() => {
     const pad = { id: 'Xbox test fixture (standard)', index: 0, connected: true, mapping: 'standard', axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, touched: false, value: 0 })), timestamp: 0 };

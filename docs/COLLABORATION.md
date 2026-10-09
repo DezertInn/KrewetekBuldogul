@@ -19,7 +19,8 @@ Verification date: 2026-10-09 (Europe/Warsaw).
 | OpenAI sharing | Available sharing tools manage ChatGPT Pages/Spaces; they do not establish shared access to this local Codex folder |
 | GitHub collaborator access | User confirmed [loszavera](https://github.com/loszavera); GitHub verified the account. Write access is pending invitation acceptance |
 | Invitations | Write-access invitation sent to `loszavera` on 2026-10-09; last verified status was pending. Acceptance and active write access have not subsequently been verified |
-| Milestone 1 authorization | Implement/validate the prototype, commit and push to `Dev`, then open a review PR against `Main`; leave it unmerged and leave `Dev` active |
+| Milestone 1 authorization | Implement/validate the prototype and its approved refinement, commit and push to `Dev`, and update the existing review PR against `Main`; leave it unmerged and leave `Dev` active |
+| Prototype review | [PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2), `Dev` → `Main`, verified open and unmerged at refinement start; baseline prototype commit `2d4d08e` is published on `Dev` |
 
 Do not treat this file's intended workflow as evidence that a remote operation has succeeded.
 

@@ -8,7 +8,7 @@ Approved milestone 1 stack: **TypeScript + Babylon.js + Vite**; real-time 3D gra
 
 ## 1. Scope and decision status
 
-This document describes the browser game architecture and distinguishes the authorized prototype from future systems. Milestone 1 covers one gym room, one procedural player with a red-and-white scarf, boxing-glove attacks, a resettable training dummy, initial keyboard/mouse/gamepad actions, and validation. It does not implement the full game. Detailed balance values remain **Proposed**, used only as adjustable prototype defaults under the user's authorization.
+This document describes the browser game architecture and distinguishes the authorized prototype from future systems. Milestone 1 covers one gym room, one procedural player with a red-and-white scarf, boxing-glove attacks, a resettable training dummy, initial keyboard/mouse/gamepad actions, and validation. It does not implement the full game. The [GDD prototype overrides](GAME_DESIGN_TEMPLATE.md#63-approved-milestone-1-prototype-overrides) are approved for this feel test; final production balance remains **Proposed**.
 
 ### Milestone 1 implementation boundary
 
@@ -110,6 +110,8 @@ Use simple 2D collision shapes on the ground plane for navigation and explicit a
 ### 4.2 Damage and attack resolution
 
 An attack definition describes anticipation, active windows, recovery, reach/shape, damage parameters, displacement, and optional projectile/effect references. A hit record identifies attacker, primary attack opportunity, combo if any, target, unmodified base damage, target health before damage, origin, and simulation tick. One rifle round, one glove strike, and one pillar swing each form an attack opportunity; a four-strike combo does not collapse into one opportunity. Track targets already hit by an opportunity so a single active window cannot apply accidental repeated damage. Intentional multihit attacks must specify their repeat interval and opportunity IDs.
+
+The refinement scales glove phase durations before evaluating their cumulative boundaries at 60 Hz. Fractional boundaries are retained; a phase begins on the first fixed-step sample at or beyond its boundary. Facing locks once on that first active sample, not by equality with the startup duration. The selected strike totals remain integral, preserving the exact full-cycle cadence without independently rounding each phase. Range preview and damage queries both read the same configuration. The approved rate, reach, damage, and production-balance distinction belong to the [GDD](GAME_DESIGN_TEMPLATE.md#63-approved-milestone-1-prototype-overrides).
 
 The rifle and melee weapons share damage rules but use distinct hit queries. Proposed rifle resolution is an instantaneous ground-plane ray against the nearest eligible target or blocking geometry, with a cosmetic tracer and impact event; damage must not depend on the tracer reaching its endpoint. Melee uses the authored glove or pillar region during its active window, constrained by range, facing, and blocking geometry. Pillar area coverage can damage several valid targets, but must not gain an extra upgrade-trigger budget for every target. Enemy projectiles, where proposed, use their own swept travel queries rather than the player's rifle tracer.
 
@@ -303,7 +305,7 @@ For **every approved OS/browser combination**, record the following rows separat
 | Input configuration | Required checks | Current status |
 | --- | --- | --- |
 | Keyboard + mouse | Non-US keyboard layout, alternate buttons/wheel, menu-only keyboard use, browser reserved shortcuts | Prototype checks are recorded separately; full remapping/layout matrix remains pending |
-| DualShock 4 over USB | Mapping, both sticks/triggers, complete remapping, prompts, cold connection, disconnect/reconnect | Untested |
+| DualShock 4 over USB | Mapping, both sticks/triggers, complete remapping, prompts, cold connection, disconnect/reconnect | User-reported general success on the earlier Chrome prototype; browser version, revision/firmware and per-action results unknown. Refined build and full matrix pending; see [validation report](MILESTONE_1_VALIDATION.md) |
 | DualShock 4 over Bluetooth | Same tests; reconnect after sleep; record adapter/OS behavior | Untested |
 | Xbox One controller over USB | Same mapping/rebinding/lifecycle tests; record exact hardware revision | Required family; revision TBD; untested |
 | Xbox One controller over Bluetooth | Same tests using a Bluetooth-capable revision; verify device capability before enrollment | Required transport on compatible hardware; revision TBD; untested |

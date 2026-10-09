@@ -1,6 +1,6 @@
 # KrewetekBuldogul — Game Design Draft
 
-**Document status:** First populated design draft, 2026-10-09. The supplied creative brief is **Confirmed**; all names, story details, mechanics, quantities beyond that brief, and numerical tuning below are **Proposed** unless explicitly marked otherwise. **TBD** identifies an unresolved decision. Milestone 1 is separately authorized; the [validation report](MILESTONE_1_VALIDATION.md) records prototype checks without establishing final balance or full-game playtesting.
+**Document status:** Design draft with approved milestone 1 refinement, 2026-10-09. The supplied creative brief is **Confirmed**; all names, story details, mechanics, quantities beyond that brief, and numerical tuning below are **Proposed** unless explicitly marked otherwise. **TBD** identifies an unresolved decision. The [approved prototype overrides](#63-approved-milestone-1-prototype-overrides) govern the current feel test; they do not approve production balance. The [validation report](MILESTONE_1_VALIDATION.md) records prototype checks without establishing full-game playtesting.
 
 **Design owner / approval:** TBD. This document owns gameplay rules, content IDs, and balance values. [Art Design](ART_DESIGN_TEMPLATE.md) owns presentation specifications; [Technical Design](TECHNICAL_DESIGN.md) owns architecture and platform validation. Cross-document decisions and prioritized open questions belong in the [decision register](DECISIONS_AND_OPEN_QUESTIONS.md). The existing filename is retained for link compatibility.
 
@@ -20,7 +20,7 @@
 | Audio | Cartoonish, pleasant sound effects; no music |
 | Inputs | Customizable gameplay and menu actions on keyboard/mouse, DualShock 4, and Xbox One/Series; controller USB/Bluetooth validation on compatible hardware |
 | Delivery and workflow | Browser deployment preferred; Windows desktop browsers first, other desktop systems later; free tools and a code-first Codex in VS Code workflow |
-| Current authorization | Milestone 1 technical prototype only: TypeScript/Babylon.js/Vite, one procedural gym/player, boxing gloves/dummy, initial input, and validation. Proposed tuning is adjustable; later milestones, production assets, and deployment remain outside scope |
+| Current authorization | Milestone 1 technical prototype and its approved refinement only: TypeScript/Babylon.js/Vite, one procedural gym/player, boxing gloves/dummy, initial input, and validation. Section 6.3 governs approved prototype tuning; later milestones, production assets, and deployment remain outside scope |
 
 One local player, a fixed orthographic camera, and TypeScript + Babylon.js + Vite are approved for milestone 1; broader production design remains subject to review. Multiplayer, accounts, cloud saves, mobile/touch input, native builds, and a licensed real-person portrayal are not requirements. References do not authorize copying Hades characters, narrative, compositions, UI, or assets, and do not establish how Hades II renders internally.
 
@@ -80,7 +80,7 @@ Checkpoint on entering a safe room before its encounter and after settling a rew
 
 ## 5. Movement, combat, and common rules
 
-All mechanics and values below are **Proposed tuning inputs**, not measured feel or approved balance.
+The table below retains **Proposed production tuning inputs**, not approved final balance. For the current prototype, the [approved section 6.3 overrides](#63-approved-milestone-1-prototype-overrides) take precedence; unchanged prototype rules remain as implemented for milestone 1.
 
 | Rule | Proposed definition |
 | --- | --- |
@@ -103,9 +103,11 @@ Base damage always belongs to one identifiable attack opportunity: one rifle rou
 
 ## 6. Exactly three weapons
 
-The identities are **Confirmed**. Names, mechanics, timings, and selection rules are **Proposed**. Choose one weapon before the run; all three are available immediately. No in-run switching, carried backup weapon, secondary attack, alternate form, or fourth weapon is included. The same attack action drives every weapon; the rifle additionally uses reload.
+The identities are **Confirmed**. Names, production mechanics, timings, and selection rules are **Proposed**; [section 6.3](#63-approved-milestone-1-prototype-overrides) separately records approved prototype overrides. The proposed production rule is to choose one weapon before the run; all three are available immediately. No in-run switching, carried backup weapon, secondary attack, alternate form, or fourth weapon is included. The same attack action drives every weapon; the rifle additionally uses reload.
 
 ### 6.1 Weapon definitions
+
+These are the retained **Proposed production** definitions. They do not replace the approved current glove values in section 6.3.
 
 | Field | weapon_01 | weapon_02 | weapon_03 |
 | --- | --- | --- | --- |
@@ -127,7 +129,7 @@ The pillar is an exaggerated portable monument: a shortened shaft, oversized bas
 
 ### 6.2 Shared balance benchmark
 
-**Confirmed relationship:** melee baseline sustained single-target DPS matches; rifle is slightly lower. **Proposed numerical interpretation:** gloves 100 DPS, column 100 DPS, rifle 90 DPS (10% lower).
+**Confirmed production relationship:** melee baseline sustained single-target DPS matches; rifle is slightly lower. **Proposed production numerical interpretation:** gloves 100 DPS, column 100 DPS, rifle 90 DPS (10% lower). The temporary glove-only feel test in section 6.3 differs deliberately; all three weapons must be reconciled during milestone 2 before accepting a production benchmark.
 
 The benchmark uses the same stationary, effectively unlimited-health, zero-defense target with no invulnerability, guards, knockback, power-ups, assists, critical hits, misses, dash cancels, or movement interruptions. Every eligible strike hits one target. Measure complete repeat cycles, including preparation, active time, recovery, combo boundaries, and rifle reload. These are spreadsheet-style design calculations, not application test results.
 
@@ -140,6 +142,30 @@ The benchmark uses the same stationary, effectively unlimited-health, zero-defen
 Rifle decimal phase lengths are display-rounded; use exact 3/1/5 simulation ticks so each shot stays 9 ticks. The rifle's last recovery occurs before reload starts; first-round startup is included in every cycle. Gloves have no extra pause beyond listed recoveries. Over a common 12-second repeat horizon, the calculated totals are rifle 1,080, gloves 1,200, and column 1,200 damage, with boundary events assigned consistently to one cycle.
 
 This does not make weapons equally effective in play. Rifle firing-only DPS is 120 before reload, column damage arrives in 150-point bursts and may hit several enemies, and gloves lose less progress when repositioning. Range, stagger, knockback, overkill, time on target, target count, defense patterns, reload choice, and dash cancellation alter realized output. Future comparisons must report sustained single-target damage, burst windows, aggregate crowd damage, and completion/survival separately. Upgrade normalization is defined in section 9.
+
+### 6.3 Approved milestone 1 prototype overrides
+
+**Confirmed for this prototype feel test only, 2026-10-09:** The user authorized these changes after reporting responsive, natural movement and mouse aiming, but movement that felt too slow and glove attacks needing more reach and speed. This is the authoritative current tuning override; it does not approve final production balance or milestone 2 implementation.
+
+| Parameter | Original milestone 1 default | Approved refinement |
+| --- | --- | --- |
+| Normal movement speed | 6.0 design m/s | **6.6 design m/s**, a 10% increase; normalized keyboard diagonals and proportional analog movement retained |
+| Glove reach | 1.5 m | **1.95 m**, a 30% increase; existing 60-degree cone, nearest eligible target, obstruction checks, and visible range correspondence retained |
+| Glove attack rate | One four-strike cycle per second | **1.20 cycles/s**; every startup, active, and recovery duration divided by 1.20, rather than reduced by 20% |
+| Strike damage | 20, 20, 30, 30 | **Unchanged**, 100 damage per four-strike cycle |
+| Attack movement multiplier | 70% of normal movement | **Unchanged**, applied to the new normal speed |
+| Dash | 3 m travel, 0.30 s duration, 1.20 s cooldown, first 0.15 s invulnerable | **Unchanged**; movement tuning must not increase dash travel |
+
+| Glove strike | Startup / active / recovery (seconds, display-rounded) | Exact durations in 60 Hz tick units | Total |
+| --- | --- | --- | --- |
+| 1 and 2, each | 0.0416667 / 0.0416667 / 0.0833333 | 2.5 / 2.5 / 5 | 10 ticks = 1/6 s |
+| 3 and 4, each | 0.0833333 / 0.0416667 / 0.125 | 5 / 2.5 / 7.5 | 15 ticks = 1/4 s |
+
+The complete four-strike cycle is **50 ticks at 60 Hz = 5/6 s, approximately 0.8333 s**. Preserve fractional phase boundaries across the cycle; do not independently round each phase to whole ticks or discard elapsed time at transitions. Facing locks when the active phase begins; each intended strike can hit its target only once. Existing input buffering, cancellation barriers, safe pause/resume, and combo handling remain in effect. Dash cancellation must retain the canceled strike's scheduled end so it cannot shorten attack cadence.
+
+Under the same ideal benchmark assumptions as section 6.2, theoretical sustained glove DPS is **100 / (5/6) = 120**. Use complete cycles when measuring this override (for example, 12 cycles over 10 s yield 1,200 theoretical damage); the proposed production 12-second comparison is not the current glove acceptance target. This figure is a timing calculation, not a claim about combat effectiveness or owner acceptance of the newly tuned build. Actual check results and pending manual retests belong in the [validation report](MILESTONE_1_VALIDATION.md).
+
+Keep the proposed 100/100/90 production benchmark visible for later review. Milestone 2 must reconcile glove and pillar damage/timing while keeping their baseline sustained single-target DPS equal and rifle DPS slightly lower. No other weapons, upgrades, or production balance changes are authorized by this refinement.
 
 ## 7. Biomes, levels, rooms, and route
 
@@ -207,7 +233,7 @@ The seven symbolic/cultural sources are **Confirmed**. Their mechanical roles, U
 6. Outgoing percentage bonuses add and cap at +100%; player incoming reductions add and cap at 50%. Temporary barriers absorb remaining incoming damage after reduction and expire as stated; consume the barrier expiring soonest first, then effect ID for ties. Enemy frontal guards have their own documented 70% reduction and are not player upgrade reductions. No sample grants attack speed; any later proposal must cap combined speed at +25% and scale complete attack/reload cycles together.
 7. Secondary damage, damage-over-time ticks, reflected/environmental damage, barriers, healing, and status expiry never generate primary-hit credit or trigger another upgrade. No recursive procs, on-kill chains, self-triggered loops, or damage-derived healing exist in this sample. Clamp health to maximum and reject negative durations/values.
 8. **Impact normalization:** each successful primary attack opportunity credits each owned Impact effect with `min(unmodified base damage, primary target pre-hit health) / 100`. On the first simulation tick dealing positive damage, select the nearest positive-damage recipient measured from the attacker at that hit snapshot, then stable target ID for ties. Award once for the whole opportunity; later contacts do not award again. One column sweep awards once across its whole area; each glove strike and rifle round awards separately. A blocked/invulnerable/missed hit or one dealing zero damage awards nothing. Outgoing upgrades and extra targets do not increase credit.
-9. Each Impact effect has its own meter. Consume each whole point, retain the fraction, and batch multiple whole points from one hit into a single outcome with pulse count `n`; there is no per-hit random chance. At the baseline benchmark, rifle contributes 0.18 per round (0.9 pulses/s sustained), gloves 0.20/0.20/0.30/0.30 (1 pulse/s), and column 1.50 (1 pulse/s). A column may earn two pulses on a later swing; listed caps still apply. Overkill reduces credit instead of rewarding farming tiny targets.
+9. Each Impact effect has its own meter. Consume each whole point, retain the fraction, and batch multiple whole points from one hit into a single outcome with pulse count `n`; there is no per-hit random chance. At the proposed production benchmark in section 6.2, rifle contributes 0.18 per round (0.9 pulses/s sustained), gloves 0.20/0.20/0.30/0.30 (1 pulse/s), and column 1.50 (1 pulse/s). These production rates do not describe the faster prototype override; upgrades are not implemented in milestone 1, and future normalization must be reviewed with all three weapons. A column may earn two pulses on a later swing; listed caps still apply. Overkill reduces credit instead of rewarding farming tiny targets.
 10. Unless a row says otherwise: one owned copy, no rank/stacking, passive duration while owned, zero internal cooldown, and no extension from duplicate acquisition. A stated cooldown belongs to that effect, starts on its trigger, and is shared across targets; a cooldown blocks reapplication rather than silently refreshing a buff. Effects on an already defeated primary target dissipate unless the row explicitly retargets.
 
 Normalization removes the automatic advantage of many weak hits; it does not prove identical build strength. Burst timing, missed slow attacks, overkill, support targeting, and status caps remain measurable tradeoffs. Keep raw primary damage, secondary damage, meter credit, and target count separate in future telemetry/tests.
@@ -264,7 +290,7 @@ No pair is forbidden by source. Three deliberate tensions remain visible in tool
 
 ### 10.2 Proposed action set and defaults
 
-**Confirmed:** All gameplay and menu actions are customizable across supported inputs. The mappings below are starting proposals, not fixed controls. The game must display current bindings, not hardcoded glyphs. USB/Bluetooth support and exact Xbox One hardware capability remain future physical validation, as detailed in the [TDD compatibility matrix](TECHNICAL_DESIGN.md).
+**Confirmed:** All gameplay and menu actions are customizable across supported inputs. The mappings below are starting proposals, not fixed controls. The game must display current bindings, not hardcoded glyphs. The user reported successful physical DualShock 4 USB use in Chrome on the original prototype; detailed per-action results and a tuned-build retest remain pending. Other hardware/transport combinations and exact Xbox One capability still require physical validation, as detailed in the [TDD compatibility matrix](TECHNICAL_DESIGN.md#10-validation-and-compatibility-matrix).
 
 | Context / action | Keyboard / mouse default | DualShock 4 default | Xbox default | Semantics |
 | --- | --- | --- | --- | --- |
@@ -317,7 +343,7 @@ Milestone 1 has explicit implementation authorization; later stages need a separ
 
 | Future question | Scenario / proposed acceptance criterion | Evidence status |
 | --- | --- | --- |
-| Does baseline damage meet the relationship? | Zero-defense stationary target; exact 12 s complete cycles yield 1,080/1,200/1,200 for rifle/gloves/column; log every phase and reload; no upgrades or assists | Full three-weapon comparison remains unimplemented; milestone 1 checks only gloves, as recorded in its validation report |
+| Does production baseline damage meet the relationship? | Proposed section 6.2 target: zero-defense stationary target; exact 12 s complete cycles yield 1,080/1,200/1,200 for rifle/gloves/column; log every phase and reload; no upgrades or assists | Full three-weapon comparison remains unimplemented. Current prototype glove checks use the approved section 6.3 override; milestone 2 must reconcile production values |
 | Do interrupts preserve honest timing? | Cancel every startup/recovery/reload boundary; no phantom hit, ammunition refill, Impact credit, or shortened next-cycle start | Untested |
 | Are weapons viable beyond a dummy? | Each weapon completes the same seeded route without upgrades and with matched budgets; compare uptime, damage taken, overkill, crowd damage, and reload/cancel behavior before setting a win-rate tolerance | Untested; participant count and final tolerance TBD |
 | Are upgrade combinations bounded? | Exercise all 21 effects individually, the identified synergy pairs, and an eight-effect stress build; no recursive proc, duplicate reward, over-cap stack, or multiple column Impact awards per sweep | Untested |
@@ -334,5 +360,6 @@ Milestone 1 has explicit implementation authorization; later stages need a separ
 | --- | --- | --- |
 | 2026-10-09 | Supplied character/theme, three weapon identities, three-by-three biome scope, enemy families/major roles, seven sources, modern urban visual direction, pleasant SFX, and no music | Confirmed by the creative brief |
 | 2026-10-09 | Populated fictional story, original protagonist proposal, combat values, nine-level route, enemy roles/phases, sample power-ups, controls, and validation plan | Proposed design draft; arithmetic/content review only |
+| 2026-10-09 | Approved milestone 1 movement, glove reach, and glove rate overrides with unchanged damage; retained proposed production balance separately | Confirmed user refinement request; newly tuned feel requires a fresh manual retest, with evidence in the validation report |
 
 The [prioritized review queue](DECISIONS_AND_OPEN_QUESTIONS.md#prioritized-open-questions) contains at most ten questions for this initial review. Highest-impact GDD decisions are the fictional premise/president separation, one-weapon-per-run rule, movement/aim/dash feel, upgrade selection and persistence, and content/rating boundaries. Those proposals can be revised without treating this document as permission to implement.

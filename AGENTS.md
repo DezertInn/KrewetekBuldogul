@@ -6,6 +6,8 @@ The user authorized milestone 1 on 2026-10-09: a TypeScript + Babylon.js + Vite 
 
 Commit validated work on `Dev`, push to `origin/Dev`, and open a review PR against `Main`; leave it unmerged and `Dev` active. Use normal environment approvals where required. Later milestones, full rebinding UI, the full three-weapon system, production assets, public deployment, and paid services remain outside this authorization. Preserve all other rules below.
 
+The user subsequently authorized a milestone 1 refinement: movement +10%, glove reach +30%, attack rate +20% with unchanged per-hit damage, focused validation, a Proposed visual-review brief, and updating existing PR #2. The GDD records the authoritative prototype overrides; these do not approve final three-weapon balance. Record the user-reported Chrome/DualShock 4 USB success as an earlier-build observation, not a fresh physical test of the tuned build.
+
 ## Sources of truth
 
 - `README.md`: project overview and entry point.

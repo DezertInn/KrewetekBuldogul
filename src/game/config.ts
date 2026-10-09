@@ -1,17 +1,25 @@
 import type { Room } from './types';
 
-// Adjustable milestone-1 defaults from GDD sections 5 and 6. Not final balance.
+// Approved prototype override in GDD section 6.3; not final production balance.
+const GLOVE_ATTACK_RATE = 1.20;
 export const RULES = {
-  fixedStep: 1 / 60, moveSpeed: 6, radius: 0.34,
+  fixedStep: 1 / 60, moveSpeed: 6.6, radius: 0.34,
   dashDuration: 0.30, dashDistance: 3, dashInvulnerability: 0.15, dashCooldown: 1.20,
   inputBuffer: 0.10, comboReset: 0.40, attackMoveFactor: 0.70,
-  gloveRange: 1.5, gloveHalfAngle: Math.PI / 6,
+  gloveRange: 1.95, gloveHalfAngle: Math.PI / 6,
   strikes: [
     { startup: 3, active: 3, recovery: 6, damage: 20 },
     { startup: 3, active: 3, recovery: 6, damage: 20 },
     { startup: 6, active: 3, recovery: 9, damage: 30 },
     { startup: 6, active: 3, recovery: 9, damage: 30 },
-  ],
+  ].map(strike => ({
+    ...strike,
+    // Keep fractional tick boundaries. Whole strikes still total 10/10/15/15
+    // ticks, so the four-strike cycle is exactly 50 ticks without rounding drift.
+    startup: strike.startup / GLOVE_ATTACK_RATE,
+    active: strike.active / GLOVE_ATTACK_RATE,
+    recovery: strike.recovery / GLOVE_ATTACK_RATE,
+  })),
 } as const;
 export const ROOM: Room = {
   halfWidth: 8, halfDepth: 6,

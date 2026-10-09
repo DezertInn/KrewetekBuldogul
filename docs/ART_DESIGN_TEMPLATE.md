@@ -38,6 +38,21 @@ This document owns presentation, audio direction and asset specifications. [Game
 
 The reference brief is conceptual only: Hades/Hades II for composition and clarity, contemporary sportswear and urban facilities for materials, Grot for weapon identity, and Kolumna Zygmunta for the pillar motif. No reference image, portrait, scan, recording, font or third-party asset is acquired or cleared by this document. Before production, build a reference register with source, creator, intended study and permission to redistribute recorded separately.
 
+### 2.1 Proposed visual review after milestone 1
+
+**User-reported feedback, 2026-10-09:** The initial Chrome prototype worked generally as expected, but its colors, animations, textures, and character design were unsatisfactory. The procedural placeholders are not an approved visual target. Successful technical checks establish neither art acceptance nor approval of the palette and proportions proposed below.
+
+**Proposed review brief:** Keep the confirmed bright, charming, funny adult hero, prominent red-and-white scarf, original modern Polish urban setting, and readable isometric presentation. Use a small, coherent review of the hero and gym before expanding production assets. The following comparisons are future review work; this refinement authorizes documenting the brief, not producing finished art.
+
+| Review area | Proposed comparison grounded in the existing direction | Owner decision needed |
+| --- | --- | --- |
+| Palette | Compare the existing teal/yellow hero concept with quieter gym surfaces against a cobalt/amber sportswear alternative. In both, preserve the scarf as the clearest red-and-white focal point; judge grayscale separation and actual-camera contrast before choosing exact swatches. | Select a color family and saturation level; current placeholder colors and section 4 swatches remain unapproved. |
+| Character silhouette | Review an athletic adult with broad cropped jacket, tapered legs, large readable gloves, planted feet, and two controlled scarf tails. Compare a grounded six-head proportion with a slightly more exaggerated torso/hand treatment; check eight facings at gameplay scale before facial detail. | Choose proportions and degree of exaggeration; retain charm and humor without a recognizable real-person likeness. |
+| Materials and textures | Compare broad painterly color planes and selective edge wear on canvas, plaster, vinyl, and wood against a cleaner graphic treatment using the same materials. Keep floor noise low and collisions readable; avoid photo detail or fine patterning that competes with attacks. | Choose painterly versus cleaner surface treatment and acceptable wear/detail density for one hero-and-gym target. |
+| Animation feel | Use confident footwork with visibly planted steps, distinct anticipation/contact/return-to-guard poses, and restrained scarf follow-through. Compare restrained athletic timing with more comic pose exaggeration; preserve the approved gameplay phase timings and avoid added hits, camera shake, or artificial delay. | Choose how grounded or theatrical poses should be, with clarity during repeated fast punches as the acceptance check. |
+
+**Proposed review outcome:** Approve one combined direction at the actual camera distance, recording palette, silhouette, surface treatment, and animation choices together. Review 1280×720 and 1920×1080, eight facings, grayscale, and reduced effects before treating it as a production target. Until that owner review, the current build remains a gameplay-feel prototype. The [decision register](DECISIONS_AND_OPEN_QUESTIONS.md#prioritized-open-questions) tracks the unresolved approval; no production asset generation is authorized here.
+
 ## 3. Camera and composition
 
 Use an orthographic camera at a proposed 45° yaw and 35° downward pitch, with no player-controlled rotation. This is a first review setup, not a statement about Hades II's internals. Gameplay remains on a plane; visual height does not add jumping or vertical combat.

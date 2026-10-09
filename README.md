@@ -6,7 +6,7 @@ An action roguelite set in an exaggerated contemporary Polish urban world, using
 
 **Current phase: milestone 1 technical prototype.** A procedural 3D gym, a scarf-wearing placeholder player, movement/aim/dash, boxing-glove attacks, and a resettable training dummy form the first playable slice. TypeScript, Babylon.js, and Vite are approved for this milestone. See the [validation report](docs/MILESTONE_1_VALIDATION.md) for checks, measured conditions, and remaining manual verification.
 
-This slice has one weapon and one room. The full three-weapon game, nine levels, enemies, power-ups, saves, full control-rebinding UI, production art/audio, and public deployment remain future work. There is no music or audio in this prototype. Detailed combat values are adjustable **Proposed** defaults, not final approved balance.
+This slice has one weapon and one room. The full three-weapon game, nine levels, enemies, power-ups, saves, full control-rebinding UI, production art/audio, and public deployment remain future work. There is no music or audio in this prototype. The current movement and glove feel test uses [approved prototype overrides](docs/GAME_DESIGN_TEMPLATE.md#63-approved-milestone-1-prototype-overrides); retained **Proposed** production values are not final approved balance.
 
 ## Run locally
 
@@ -50,13 +50,13 @@ Run `npm.cmd run build` before previewing or running browser tests. The browser 
 
 Release held controls before resuming. Focus loss, a hidden tab, or active-controller disconnection pauses play and clears held actions; resuming is deliberate. Controller status and input-family instructions are visible in the interface. Press a controller button if the browser has not detected it yet.
 
-This milestone uses the browser's **standard** gamepad mapping. An unknown mapping is reported instead of guessing controls. Xbox One/Series and DualShock 4 USB/Bluetooth support still requires the [physical test matrix](docs/TECHNICAL_DESIGN.md#10-validation-and-compatibility-matrix); simulated tests do not establish hardware compatibility. Bindings are editable data in [the input module](src/input/controls.ts); the in-game rebinding interface belongs to milestone 2.
+This milestone uses the browser's **standard** gamepad mapping. An unknown mapping is reported instead of guessing controls. The user reported successful physical **DualShock 4 over USB in Chrome** on the original prototype; the exact browser version, controller revision/firmware, and detailed per-action results were not supplied. A fresh physical test of the tuned build is pending. DualShock Bluetooth, Xbox One/Series, and other browser/hardware combinations remain unverified in the [physical test matrix](docs/TECHNICAL_DESIGN.md#10-validation-and-compatibility-matrix); simulated tests do not establish hardware compatibility. Bindings are editable data in [the input module](src/input/controls.ts); the in-game rebinding interface belongs to milestone 2.
 
 ## Confirmed scope
 
 - One handsome, charming, funny adult Polish football hooligan protagonist, with bright clothing and a prominent red-and-white scarf; an original fictional identity without a direct recognizable likeness to the loose Karol Nawrocki reference.
 - Exactly three weapons: a stylized FB MSBS Grot assault rifle, fast boxing gloves, and a slow, heavy Kolumna Zygmunta-inspired pillar.
-- Equal baseline sustained single-target DPS for the two melee weapons; slightly lower rifle DPS. Exact values are proposed, not playtested.
+- Equal production baseline sustained single-target DPS for the two melee weapons; slightly lower rifle DPS. Exact production values remain Proposed; the approved glove-only prototype override is temporary.
 - Three biomes with three levels each: boxing gym, football stadium, and presidential palace; nine levels in the initial scope.
 - Boxers and a miniboss in the gym; hooligans and a miniboss in the stadium; clerks, lobbyists, and a president final boss in the palace.
 - PS4 / DualShock 4, Xbox controller, and keyboard/mouse input.
@@ -90,13 +90,13 @@ The `docs/` directory contains the design baseline and validation record. The po
 
 ## Development workflow
 
-Use the exact branch names `Dev` and `Main`. Both branches are published. `Dev` is the verified GitHub default and local working branch; `Main` holds reviewed baselines. The milestone 1 authorization covers committing/pushing validated work on `Dev` and opening a review PR against `Main`; leave that PR unmerged and `Dev` active. There are no additional permanent branches. See [collaboration status](docs/COLLABORATION.md) for setup and remaining access decisions.
+Use the exact branch names `Dev` and `Main`. Both branches are published. `Dev` is the verified GitHub default and local working branch; `Main` holds reviewed baselines. The milestone 1 refinement authorization covers committing/pushing validated work on `Dev` and updating the existing [review PR #2 against Main](https://github.com/DezertInn/KrewetekBuldogul/pull/2); leave it unmerged and `Dev` active. There are no additional permanent branches. See [collaboration status](docs/COLLABORATION.md) for setup and remaining access decisions.
 
 ## Next steps
 
 1. The collaborator accepts the pending GitHub invitation, then active write access is verified; see [collaboration status](docs/COLLABORATION.md).
-2. Review the prototype and [validation limitations](docs/MILESTONE_1_VALIDATION.md); complete available physical-controller checks and agree the browser/hardware baseline.
-3. Review the populated game and art/audio drafts and the [prioritized design questions](docs/DECISIONS_AND_OPEN_QUESTIONS.md#prioritized-open-questions); approve or revise the proposed fiction, combat, upgrades, and production targets.
+2. Retest the tuned movement, glove reach, and punch speed, including DualShock 4 USB in Chrome; consult the [validation limitations](docs/MILESTONE_1_VALIDATION.md) and complete other available physical-controller checks without assuming the earlier manual pass covers this build.
+3. Review the [proposed visual brief](docs/ART_DESIGN_TEMPLATE.md#21-proposed-visual-review-after-milestone-1), following dissatisfaction with placeholder colors, animations, textures, and character design. Resolve palette, silhouette, surface, and animation direction before authorizing production assets; other [design questions](docs/DECISIONS_AND_OPEN_QUESTIONS.md#prioritized-open-questions) remain open.
 4. After review, explicitly authorize milestone 2: complete gameplay/menu rebinding and recovery, all three weapon behaviors, and comparable combat measurements. Later work is not authorized by the milestone 1 request.
 
 Project licensing is TBD. No project license or rights to third-party assets have been selected by this setup.

@@ -56,7 +56,7 @@ export function moveWithCollision(position: Vec2, delta: Vec2, radius: number, r
 export class Simulation {
   state: GameState;
   private tick = 0;
-  private attack: { strike: number; age: number; hit: boolean; facing: Vec2 } | null = null;
+  private attack: { strike: number; age: number; hit: boolean; facing: Vec2; facingLocked: boolean } | null = null;
   private nextAttackTick = 0;
   private lastAttackEnd = -999;
   private nextCombo = 0;
@@ -100,7 +100,7 @@ export class Simulation {
     if (!this.attack && !this.dashTicks && this.tick >= this.nextAttackTick && (actions.attackHeld || this.attackBuffer >= this.tick)) {
       if (this.tick - this.lastAttackEnd >= Math.round(RULES.comboReset / RULES.fixedStep)) this.nextCombo = 0;
       const strike = RULES.strikes[this.nextCombo];
-      this.attack = { strike: this.nextCombo, age: 0, hit: false, facing: { ...player.facing } };
+      this.attack = { strike: this.nextCombo, age: 0, hit: false, facing: { ...player.facing }, facingLocked: false };
       this.nextAttackTick = this.tick + strike.startup + strike.active + strike.recovery;
       this.attackBuffer = -1;
     }
@@ -114,7 +114,12 @@ export class Simulation {
       if (age < strike.startup) player.attackProgress = age / strike.startup;
       else if (age < strike.startup + strike.active) {
         player.attackProgress = (age - strike.startup) / strike.active;
-        if (age === strike.startup) this.attack.facing = { ...player.facing };
+        // Fractional boundaries may fall between samples: latch on the first
+        // active sample, rather than requiring age === startup (e.g. 2.5 ticks).
+        if (!this.attack.facingLocked) {
+          this.attack.facing = { ...player.facing };
+          this.attack.facingLocked = true;
+        }
         player.facing = { ...this.attack.facing };
       } else player.attackProgress = (age - strike.startup - strike.active) / strike.recovery;
     }
