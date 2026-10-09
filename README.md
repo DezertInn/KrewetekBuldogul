@@ -121,6 +121,7 @@ Documents distinguish **Confirmed** requirements, authorized adjustable prototyp
 | --- | --- |
 | [Technical design](docs/TECHNICAL_DESIGN.md) | Architecture, input/storage, scope boundaries, compatibility, future milestones |
 | [Milestone 3 validation](docs/MILESTONE_3_VALIDATION.md) | Current run/save/upgrade/animation checks and limitations |
+| [Milestone 3 manual tests](docs/MILESTONE_3_MANUAL_TESTS.md) | Polish scenarios with steps, expected results, priorities, and an execution log |
 | [Milestone 2 validation](docs/MILESTONE_2_VALIDATION.md) | Historical input/combat checks, damage/performance, manual checklist |
 | [Milestone 1 validation](docs/MILESTONE_1_VALIDATION.md) | Historical prototype/refinement evidence |
 | [Game design](docs/GAME_DESIGN_TEMPLATE.md) | Authoritative gameplay, tuning, content IDs, and production proposals |
@@ -134,6 +135,6 @@ Documents distinguish **Confirmed** requirements, authorized adjustable prototyp
 
 Work on exact-case **Dev**, the local working and GitHub default branch. **Main** holds reviewed baselines. Milestone 3 continues the validated commit/push and existing [PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2) workflow; leave it unmerged and Dev active/default. Preserve unrelated work and coordinate file ownership; one agent manages the shared Git index and remote writes. [Collaboration status](docs/COLLABORATION.md) records the separately pending collaborator invitation.
 
-Next, validate the complete short run with each weapon, pending-offer reloads, safe-entry recovery, and the heavy pillar swing, then collect player feedback. Continue physical controller coverage and review the [proposed visual choices](docs/ART_DESIGN_TEMPLATE.md#21-proposed-visual-review-after-milestone-1). Milestone 4 would add the first complete biome and its miniboss with separately approved art/audio; production assets, paid services, publishing a new build, and merging Main still require their own authorization.
+Next, use the [manual test scenarios](docs/MILESTONE_3_MANUAL_TESTS.md) to validate the complete short run with each weapon, pending-offer reloads, safe-entry recovery, and the heavy pillar swing, then collect player feedback. Continue physical controller coverage and review the [proposed visual choices](docs/ART_DESIGN_TEMPLATE.md#21-proposed-visual-review-after-milestone-1). Milestone 4 would add the first complete biome and its miniboss with separately approved art/audio; production assets, paid services, publishing a new build, and merging Main still require their own authorization.
 
 Project licensing and targeted production rights questions remain TBD; no third-party asset rights are granted by this repository.

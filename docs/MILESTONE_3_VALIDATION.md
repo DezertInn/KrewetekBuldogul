@@ -55,6 +55,8 @@ The user reports an earlier Vercel publication and successful current gameplay. 
 
 ## Measured performance and limitations
 
+The [Polish manual test scenarios](MILESTONE_3_MANUAL_TESTS.md) provide steps, expected results, priorities, and a separate execution log for owner review, physical controllers, and remaining recovery/hosting checks. Preparing that checklist adds no manual pass result to this report.
+
 The unchanged M3 renderer was observed before the final tab-identity/menu-visibility fixes. Each independent idle dummy sample used the installed browser headlessly, default GPU settings, DPR 1, about 5 seconds / 301 requestAnimationFrame samples. Detected renderer: NVIDIA GeForce RTX 4070 Ti SUPER through ANGLE Direct3D11, WebGL 2.0. Arena rendering excludes header/footer; 151 meshes and 85 draw calls in these pillar idle scenes.
 
 | Browser | Viewport / rendered arena | Mean frame / p95 | Observed game FPS |
