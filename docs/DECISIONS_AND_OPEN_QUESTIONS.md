@@ -42,7 +42,7 @@ Five initial questions and a follow-up about the missing Git commit author were 
 
 | Question | Status | Impact |
 | --- | --- | --- |
-| Intended GitHub owner and collaborator identity | Owner: account currently signed into VS Code; its GitHub username and authenticated access still need verification. Collaborator supplied as an email, not a verified GitHub username | Do not guess either GitHub account; external setup remains dependent on verification |
+| Intended GitHub owner and collaborator identity | Verified repository owner: `DezertInn`; the public repository, both branches, and default `Dev` are confirmed. Local Git write access is demonstrated, but the currently authenticated account identity was not independently verified. Collaborator supplied as an email, not a verified GitHub username | Repository setup is complete; collaborator identity and any write-access invitation remain pending. See [Collaboration](COLLABORATION.md) |
 | Presentation | Answered: 3D graphics with isometric top-down presentation, referencing Hades II | Recorded as R13; rendering approach proposed as P02 |
 | Initial browser/device/OS targets | Answered: Windows desktop browsers first, other desktop systems later | Recorded as R14; exact versions/hardware remain proposed |
 | Team programming and game-engine experience | Preference supplied: recommend free tools fully usable through Codex in VS Code; prior experience not specified | Recorded as R16; do not assume prior engine skills |

@@ -2,6 +2,8 @@
 
 An action roguelite project using Hades as a reference for responsive combat, movement, encounters, and repeated runs.
 
+[Public GitHub repository](https://github.com/DezertInn/KrewetekBuldogul)
+
 **Current phase:** project setup and design documentation only. There is no playable game, engine project, dependency installation, or application build yet.
 
 ## Confirmed scope
@@ -34,11 +36,11 @@ The `docs/` directory contains the design baseline. `src/`, `assets/`, and `test
 
 ## Development workflow
 
-Use the exact branch names `Dev` and `Main`. `Dev` is the intended GitHub default and local working branch; `Main` holds reviewed baselines. Develop on `Dev`, review changes, and promote approved work to `Main`. There are no additional permanent branches. See [collaboration status](docs/COLLABORATION.md) for what has actually been verified.
+Use the exact branch names `Dev` and `Main`. Both branches are published. `Dev` is the verified GitHub default and local working branch; `Main` holds reviewed baselines. Develop on `Dev`, review changes, and promote approved work to `Main`. There are no additional permanent branches. See [collaboration status](docs/COLLABORATION.md) for verified setup and remaining access decisions.
 
 ## Next steps
 
-1. Resolve repository ownership and authenticated GitHub access; publish and verify the baseline if still pending.
+1. Confirm the collaborator's GitHub username if repository write access is needed; sharing and invitation status are tracked separately in the collaboration document.
 2. Review the provisional TypeScript + Babylon.js recommendation for browser 3D and the exact controller/browser matrix.
 3. Fill in the gameplay and art design templates; confirm the camera and asset pipeline details.
 4. Explicitly request the first implementation milestone when ready. This documentation does not authorize implementation.
