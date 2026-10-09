@@ -1,6 +1,6 @@
 # Milestone 3 validation
 
-Date: 2026-10-10 (Europe/Warsaw). Status: **local implementation verified; repository handoff recorded below**. This report records current evidence independently of historical [milestone 1](MILESTONE_1_VALIDATION.md) and [milestone 2](MILESTONE_2_VALIDATION.md) results. Authorization and implementation descriptions are not passed checks.
+Date: 2026-10-10 (Europe/Warsaw). Status: **implementation verified and published on Dev for review**. This report records current evidence independently of historical [milestone 1](MILESTONE_1_VALIDATION.md) and [milestone 2](MILESTONE_2_VALIDATION.md) results. Authorization and implementation descriptions are not passed checks.
 
 ## Authorized scope and boundaries
 
@@ -78,4 +78,8 @@ Browser trials exposed two real persistence defects: reload could inherit an exp
 
 ## Repository handoff
 
-Pending: record validated commit hash, verified `origin/Dev` push result, existing PR #2 update/status, `Main` left unmerged, active/default `Dev`, and final local status. Exclude generated artifacts/private data. The intended workflow is not proof that these remote actions succeeded.
+Validated implementation commit: [`514517841dab72f85e6b2007ac2c147c28b84f84`](https://github.com/DezertInn/KrewetekBuldogul/commit/514517841dab72f85e6b2007ac2c147c28b84f84), **Implement milestone 3 runs, upgrades and heavy pillar animation**. Push `d82bbb1..5145178 Dev -> Dev` succeeded; both GitHub PR metadata and `git ls-remote` confirmed the published SHA.
+
+Existing [PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2), `Dev` → `Main`, was updated to the complete M3 behavior and validation, verified open/unmerged. Remote `Main` remains `35593d6ee97ddccbb6ae41c2009bf4599ac1d5fc`; remote symbolic HEAD/default and local active branch remain `Dev`. No merge, new permanent branch, or manual hosting publication was performed.
+
+The implementation commit contains 24 authorized source/test/document files. Local status was clean after its commit/push; generated builds, browser reports, phase artifacts and portable tooling stayed ignored. This handoff record is a subsequent documentation-only commit and does not change the validated implementation. Hosted Vercel M3 remains unverified; any project-specific Git auto-deployment has not been inspected.

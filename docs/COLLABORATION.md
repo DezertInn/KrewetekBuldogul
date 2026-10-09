@@ -8,7 +8,7 @@ Updated: 2026-10-10 (Europe/Warsaw). Existing remote/access observations were la
 | --- | --- |
 | Local workspace | Existing `KrewetekBuldogul` checkout and relative-path `.code-workspace` reused; milestone 3 implementation now authorized |
 | Codex context | This task works directly in the project directory; no separate cloud project or cross-account access has been verified |
-| Local Git | `origin` is configured; local `Dev` and `Main` track `origin/Dev` and `origin/Main`. `Dev` is the working branch |
+| Local Git | `origin` is configured; local `Dev` tracks `origin/Dev`, and `origin/Main` is available as a remote-tracking ref. `Dev` is the working branch |
 | Git tooling | Git for Windows `2.56.0.windows.2` is installed in the standard Program Files location; the portable bootstrap tool is no longer required |
 | Node.js / npm | Node.js `24.21.0` LTS and npm `11.19.0` were verified for earlier work. This workstation now uses the portable runtime under ignored `.npm-cache/runtime/node-v24.21.0-win-x64/`; `node` is absent from the default terminal PATH. See [README](../README.md#run-locally) for a session-local PATH setup; no machine policy change is required |
 | Public GitHub repository | [DezertInn/KrewetekBuldogul](https://github.com/DezertInn/KrewetekBuldogul); GitHub metadata confirms public visibility and repository owner `DezertInn` |
@@ -20,7 +20,7 @@ Updated: 2026-10-10 (Europe/Warsaw). Existing remote/access observations were la
 | GitHub collaborator access | User confirmed [loszavera](https://github.com/loszavera); GitHub verified the account. Write access is pending invitation acceptance |
 | Invitations | Write-access invitation sent to `loszavera` on 2026-10-09; last verified status was pending. Acceptance and active write access have not subsequently been verified |
 | Current authorization | Implement/validate milestone 3 three-stage gym run, two offers from seven defaults, safe checkpoint/recovery/results, and heavy procedural pillar swing. Continue validated `Dev` commit/push and existing open PR #2 against `Main`; keep it unmerged and `Dev` active/default. No production assets/audio, bosses/additional biomes, later milestones, paid services, or new public deployment actions |
-| Prototype review | [PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2), `Dev` → `Main`, verified open and unmerged at milestone 2 start; refinement commit `f22e948` is historical published evidence. Earlier commit/check outcomes remain in [milestone 2 validation](MILESTONE_2_VALIDATION.md); current handoff belongs in [milestone 3 validation](MILESTONE_3_VALIDATION.md) |
+| Prototype review | [PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2), `Dev` → `Main`, updated and verified open/unmerged for milestone 3. Implementation commit `5145178` was pushed and confirmed by PR metadata and remote refs; `Main` remains `35593d6`, default/active `Dev`. Current checks/handoff are in [milestone 3 validation](MILESTONE_3_VALIDATION.md); earlier reports remain historical |
 | Browser hosting | User reports an earlier Vercel publication and successful current gameplay. No URL, deployed revision, hosting configuration, Git auto-deployment settings, or hosted milestone 3 verification has been supplied |
 
 Do not treat this file's intended workflow as evidence that a remote operation has succeeded.
