@@ -2,13 +2,13 @@
 
 **Document status:** Populated design draft v0.1. Creative requirements are confirmed; detailed production choices await review.
 
-**Prepared:** 2026-10-09. **Art approval owner:** TBD. No assets have been created or approved for production.
+**Prepared:** 2026-10-09; updated 2026-10-10. **Art approval owner:** TBD. Milestone 4 authorizes original refined native 3D/SFX for B01; final appearance and remaining full-game assets await review.
 
 ## 1. Scope and status
 
 **Confirmed** identifies the user's requirements. **Proposed** identifies recommendations, including every new name, palette, dimension, asset budget, animation treatment and production method below. **TBD** identifies a decision needing further input. Unless a paragraph or table explicitly says Confirmed, it describes a Proposed starting point.
 
-This document owns presentation, audio direction and asset specifications. [Game Design](GAME_DESIGN_TEMPLATE.md) owns narrative, abilities, attack timings, power-up effects, enemy behavior and balance. [Technical Design](TECHNICAL_DESIGN.md) owns architecture, global performance targets and compatibility. Shared decisions and the prioritized questions live in [Decisions and Open Questions](DECISIONS_AND_OPEN_QUESTIONS.md). This draft authorizes no implementation or asset generation.
+This document owns presentation, audio direction and asset specifications. [Game Design](GAME_DESIGN_TEMPLATE.md) owns narrative, abilities, attack timings, power-up effects, enemy behavior and balance. [Technical Design](TECHNICAL_DESIGN.md) owns architecture, global performance targets and compatibility. Shared decisions and prioritized questions live in [Decisions and Open Questions](DECISIONS_AND_OPEN_QUESTIONS.md). M3 established procedural run/reward/results and the heavy swing. Current M4 authorization adds the complete B01 treatment in section 2.4; remaining biomes/full campaign, music, later milestones and public deployment stay outside scope.
 
 | Area | Confirmed creative requirement |
 | --- | --- |
@@ -19,7 +19,7 @@ This document owns presentation, audio direction and asset specifications. [Game
 | Power-up sources | Exactly seven: Bóg, Ojczyzna, Orzeł Biały w koronie, Szacunek ulicy, Fryderyk Chopin, Maria Skłodowska-Curie, Mikołaj Kopernik. |
 | Sound | Pleasant, cartoonish sound effects. No music, including musical reward stingers or Chopin recordings. |
 | Input and delivery | Remappable gameplay and menu actions for keyboard/mouse, DualShock 4 and Xbox One/Series; USB/Bluetooth validation on compatible hardware. Windows desktop browsers first; other desktop systems later. |
-| Workflow | Free tools and code-first development through Codex in VS Code. TypeScript + Babylon.js remains provisional; no tool installation or engine project in this phase. |
+| Workflow | Free tools and code-first development through Codex in VS Code. TypeScript + Babylon.js + Vite and necessary free project/test tooling continue for milestone 4, including original native 3D/SFX for B01; remaining production assets need later authorization. |
 
 ## 2. Visual direction
 
@@ -37,6 +37,54 @@ This document owns presentation, audio direction and asset specifications. [Game
 | Defeat treatment | Slumps, spinning stars, scattered papers and recoverable cartoon daze. Blood and dismemberment are excluded from this proposed treatment; age target remains TBD. |
 
 The reference brief is conceptual only: Hades/Hades II for composition and clarity, contemporary sportswear and urban facilities for materials, Grot for weapon identity, and Kolumna Zygmunta for the pillar motif. No reference image, portrait, scan, recording, font or third-party asset is acquired or cleared by this document. Before production, build a reference register with source, creator, intended study and permission to redistribute recorded separately.
+
+### 2.1 Proposed visual review after milestone 1
+
+**User-reported feedback, 2026-10-09:** The initial Chrome prototype worked generally as expected, but its colors, animations, textures, and character design were unsatisfactory. The procedural placeholders are not an approved visual target. Successful technical checks establish neither art acceptance nor approval of the palette and proportions proposed below.
+
+**Proposed review brief:** Keep the confirmed bright, charming, funny adult hero, prominent red-and-white scarf, original modern Polish urban setting, and readable isometric presentation. Use a small, coherent review of the hero and gym before expanding production assets. The following comparisons remain future review work. The user's subsequent acceptance of movement, glove reach, and punch speed does not choose between these visual alternatives or approve the current placeholder appearance.
+
+| Review area | Proposed comparison grounded in the existing direction | Owner decision needed |
+| --- | --- | --- |
+| Palette | Compare the existing teal/yellow hero concept with quieter gym surfaces against a cobalt/amber sportswear alternative. In both, preserve the scarf as the clearest red-and-white focal point; judge grayscale separation and actual-camera contrast before choosing exact swatches. | Select a color family and saturation level; current placeholder colors and section 4 swatches remain unapproved. |
+| Character silhouette | Review an athletic adult with broad cropped jacket, tapered legs, large readable gloves, planted feet, and two controlled scarf tails. Compare a grounded six-head proportion with a slightly more exaggerated torso/hand treatment; check eight facings at gameplay scale before facial detail. | Choose proportions and degree of exaggeration; retain charm and humor without a recognizable real-person likeness. |
+| Materials and textures | Compare broad painterly color planes and selective edge wear on canvas, plaster, vinyl, and wood against a cleaner graphic treatment using the same materials. Keep floor noise low and collisions readable; avoid photo detail or fine patterning that competes with attacks. | Choose painterly versus cleaner surface treatment and acceptable wear/detail density for one hero-and-gym target. |
+| Animation feel | Use confident footwork with visibly planted steps, distinct anticipation/contact/return-to-guard poses, and restrained scarf follow-through. Compare restrained athletic timing with more comic pose exaggeration; preserve the approved gameplay phase timings and avoid added hits, camera shake, or artificial delay. | Choose how grounded or theatrical poses should be, with clarity during repeated fast punches as the acceptance check. |
+
+**Proposed review outcome:** Approve one combined direction at the actual camera distance, recording palette, silhouette, surface treatment, and animation choices together. Review 1280×720 and 1920×1080, eight facings, grayscale, and reduced effects before treating it as a production target. Until that owner review, the current build remains a gameplay-feel prototype. The [decision register](DECISIONS_AND_OPEN_QUESTIONS.md#prioritized-open-questions) tracks the unresolved approval; no production asset generation is authorized here.
+
+### 2.2 Authorized milestone 2 presentation boundary
+
+**Confirmed for the prototype:** Continue the existing procedural gym and original fictional scarf-wearing hero. Add only the readable placeholder presentation needed to exercise the three weapons, fixed basic-boxer group, health/protection, preparation/results, and complete controls UI. This work proceeds while the section 2.1 visual decisions remain open.
+
+| System | Prototype presentation requirement |
+| --- | --- |
+| Rifle | Distinct compact firearm silhouette, visible muzzle/aim direction, brief cosmetic tracer/impact, and clear ammunition/reload feedback. The tracer never determines damage timing. |
+| Gloves | Preserve accepted cadence; show alternating anticipation, contact, and return-to-guard poses with reach feedback matching the authoritative hit query. |
+| Pillar | Distinct oversized column silhouette with wind-up, heavy sweep, and committed recovery; active-region feedback follows simulation reach/cone rather than decorative mesh extents. |
+| Basic boxers | Use `B01_E01` as the sole archetype for the fixed three-enemy test. Show approach, anticipation, active attack, recovery, stagger, and defeat with pose/shape cues; do not rely on color alone. Keep attacks visible in the actual camera framing. |
+| State and menus | Readable weapon, attack phase, ammunition/reload, dash, player/enemy health, encounter completion/defeat, retry, and preparation selection. Controls/help prompts reflect active bindings and chosen prompt family; focus and recovery actions remain clear. |
+| Audio | Remain silent. No sound production, music, musical stingers, or recordings are part of this milestone. Essential information is visual. |
+
+GDD [section 6.4](GAME_DESIGN_TEMPLATE.md#64-authorized-milestone-2-combat-foundation) owns weapon/encounter timing and balance. Animation and VFX consume those states/events; they cannot add a hit, shorten recovery, refill ammunition early, or change collision. [Milestone 2 validation](MILESTONE_2_VALIDATION.md) records actual screenshot/animation checks and limitations separately from art acceptance.
+
+### 2.3 Authorized milestone 3 procedural presentation
+
+**Confirmed for the prototype, 2026-10-10:** keep the original gym, fictional scarf-wearing hero, existing boxers, and three weapon identities. Show the three-stage test run, current stage/outcome, health/ammunition/barrier, acquired effect descriptions, pending choices, and honest save/recovery status. Reward and result actions must remain usable through current keyboard, pointer, and remapped controller menu bindings; entering menus releases held combat actions. Use source text/simple procedural presentation rather than generating production icons/assets. No sound or music is added.
+
+The pillar uses an explicit two-handed grip with both hands attached to the shaft wraps. Preparation visibly turns hips and shoulders and lowers the body into a braced stance. The active swing moves the column across the body with coordinated arms, weight transfer, and readable silhouette; follow-through settles the heavy object before the slower reset. Independent torso motion and articulated arms/legs may extend the procedural rig. Interpolate poses continuously across startup/active/recovery and restore a coherent ready pose after cancellation, equipment change, or new stage.
+
+GDD [section 6.5](GAME_DESIGN_TEMPLATE.md#65-authorized-milestone-3-short-run-override) owns this override and preserves base combat timings/damage/range. Decorative mesh extents never grant reach or determine hit timing. Reach/cone/target feedback uses effective gameplay range after a declared upgrade. After a final killing hit, combat ends and the run/director/checkpoint settles immediately; the full-arena reward/results overlay stays hidden while the remaining cosmetic swing and recovery finish, preserving their visibility. Hidden choices do not consume confirmation input. Settings and Back/discard remain explicit menu actions; settings, confirmations, hide/focus loss freeze the cosmetic clock. Blur reveals the menu while the animation is frozen; returning to the unobscured finisher resumes only its cosmetic clock. The ordinary reward/results menu appears after the cosmetic pose returns to ready. This presentation delay never delays save/reward settlement or advances gameplay/run timers.
+
+Review phase sequences, misses/hits/cleave, repeated swings, movement, dash cancellation, pause/resume, and last-enemy completion at the actual orthographic camera distance. Inspect eight facings at 1280×720 and 1920×1080 and actual rendered hand-to-grip contacts. [Milestone 3 validation](MILESTONE_3_VALIDATION.md) records checks and limitations; passing procedural readability checks does not select production palette, proportions, materials, assets, or final animation style. Milestone 4 now authorizes the B01 treatment in section 2.4; this historical M3 presentation boundary remains evidence for that version.
+
+### 2.4 Authorized milestone 4 native 3D and SFX
+
+The owner explicitly authorized a refined original B01 treatment on 2026-10-10. The implemented variant is adjustable and awaits final owner visual/feel review. It uses native sculpted meshes, a two-bone limb rig, an original adult face/hair/clothing/scarf, three spatial weapons, distinguishable boxer/Coach silhouettes and a modular three-theme gym. This is a geometry/rig/material redesign, not recoloring M3 placeholders. No direct recognizable real-person likeness is intended.
+
+Reproduce assets from [sculpt](../src/presentation/sculpt.ts), [gym room kit](../src/presentation/gym-room.ts), [weapon poses](../src/presentation/weapon-poses.ts), [pillar poses](../src/presentation/pillar-animation.ts) and [scene](../src/presentation/scene.ts). No external meshes, textures, fonts or audio recordings are introduced. Rendered limb grips follow weapon-local attachments. Essential cone/lane/circle/guard/phase cues follow simulation geometry; decorative occluders fade and reduced effects retain threats. Check eight facings at both target resolutions and terminal grip continuity in actual captures, with results in [M4 validation](MILESTONE_4_VALIDATION.md).
+
+[Audio source](../src/audio/audio.ts) deterministically synthesizes filtered noise percussion with soft gain envelopes: weapon attack/miss/hit, steps/dash/reload, warnings/phase changes and UI confirm/reward/error. No oscillators, melody, music bus, stingers, recordings, voices or crowd chanting are used. Ambience has a reserved independent mixer preference and currently no playback. Cap voices at 24, coalesce repeated events and prioritize warnings. Master/Effects/UI/Ambience, mute, softer intensity and reduced visuals persist separately from controls/runs. Explicit interaction unlocks AudioContext; refusal/API absence remains playable. Pause/focus/hidden gates stop gameplay voices and drop old events.
 
 ## 3. Camera and composition
 
@@ -209,7 +257,7 @@ Use an urban editorial style: rectangular cards, slightly offset printed borders
 
 Begin with a 24-voice global cap and at most three concurrent instances of one repeated effect. Merge low-priority same-family events within 50 ms into one representative cue; preserve distinct imminent warnings ahead of decoration. Footsteps play once per foot contact. Frequent effects start around 0.05–0.3 seconds with softened edges; longer sounds need a gameplay reason. Shuffle samples without immediate repeat; narrow ±3% pitch variation may apply to non-critical impacts, never automatic pitch ladders. Validate during the future stress encounter.
 
-Offer reduced-intensity mixing with narrower dynamics, softer transients and quieter repeated impacts. Loudness never scales endlessly with enemy count. Pause gameplay audio on pause/focus loss; UI sounds continue only for intentional menu input. The TDD owns browser unlock/resume and codec selection. No sound has been created, mixed or tested.
+Offer reduced-intensity mixing with narrower dynamics, softer transients and quieter repeated impacts. Loudness never scales endlessly with enemy count. Pause gameplay audio on pause/focus loss; UI sounds continue only for intentional menu input. The TDD owns browser unlock/resume and codec selection. M4 implements original procedural noise SFX and independent mixer preferences as described in section 2.4. Browser event/gate evidence is in M4 validation; subjective listening and full production mix remain for owner review.
 
 ## 12. Asset pipeline and budgets
 
@@ -236,7 +284,7 @@ Load lightweight UI for all three weapon choices, then the shared hero, selected
 
 ## 13. Prioritized asset inventory
 
-These are specifications, not produced assets. After explicit implementation authorization, **P0** validates the pipeline, **P1** covers initial content, **P2** is optional polish needing review. The review slice is not authorization to build it now.
+These are future production specifications, not produced assets. Milestone 4 authorizes the B01 implementation in section 2.4. The remaining inventory below describes future full-game production specifications. After separate production authorization, **P0** validates the pipeline, **P1** covers initial content, **P2** is optional polish needing review. The production inventory below is not authorization to build it now.
 
 | Priority / inventory ID | Deliverable and content mapping | Approval criterion |
 | --- | --- | --- |
@@ -261,7 +309,7 @@ Targeted matters **TBD** before public asset distribution: possible unwanted ide
 
 | Future review | Evidence needed | Current result |
 | --- | --- | --- |
-| Character/weapons | Actual-camera eight-facing images, grayscale checks, recognition in crowded scenes. | Not tested; no assets. |
+| Character/weapons | Actual-camera eight-facing images, grayscale checks, recognition in crowded scenes. | Production-art checks pending; procedural prototype checks are separate. |
 | Enemy/boss fairness | Every GDD anticipation/vulnerable state readable with muted audio, reduced effects and overlaps. | Not tested. |
 | Nine-level coverage | Each level ID with landmarks, navigation, occlusion and kit reuse. | Documented plan only. |
 | UI/controls | Gameplay/menu remapping, device switching, prompts and Polish glyphs at minimum viewport/UI scale. | Not tested. |
