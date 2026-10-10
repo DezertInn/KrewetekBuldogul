@@ -1,6 +1,6 @@
 # Collaboration and setup
 
-Updated: 2026-10-10 (Europe/Warsaw). Existing remote/access observations were last verified on 2026-10-09 unless a later validation report records a fresh check.
+Updated: 2026-10-10 (Europe/Warsaw). Milestone 4 Git/PR handoff below was freshly verified today; unrelated access/invitation observations remain historical unless explicitly rechecked.
 
 ## Setup status
 
@@ -20,7 +20,8 @@ Updated: 2026-10-10 (Europe/Warsaw). Existing remote/access observations were la
 | GitHub collaborator access | User confirmed [loszavera](https://github.com/loszavera); GitHub verified the account. Write access is pending invitation acceptance |
 | Invitations | Write-access invitation sent to `loszavera` on 2026-10-09; last verified status was pending. Acceptance and active write access have not subsequently been verified |
 | Current authorization | Implement/validate M4 complete B01 slice, six rooms, three boxer roles/Coach, two offers, separate M4 storage, original native 3D and non-musical SFX. Validated Dev commit/push and PR #2 open/unmerged. Remaining biomes/full campaign, new weapons/sources, music/voices, paid services and public deployment/Main merge excluded |
-| Prototype review | [PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2), `Dev` → `Main`, updated and verified open/unmerged for milestone 3. Implementation commit `5145178` was pushed and confirmed by PR metadata and remote refs; `Main` remains `35593d6`, default/active `Dev`. That M3 remote result remains historical; current checks/handoff are in [milestone 4 validation](MILESTONE_4_VALIDATION.md) |
+| Prototype review | [PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2), `Dev` → `Main`, updated for M4 and verified open/unmerged/mergeable on 2026-10-10. Implementation `019f3f07b8ee176dbb90d3381f859301e28e34f9` was committed/pushed and confirmed by PR metadata and remote refs. `Main` remains `35593d6ee97ddccbb6ae41c2009bf4599ac1d5fc`; remote HEAD/default and local branch remain `Dev`. Current evidence is in [M4 validation](MILESTONE_4_VALIDATION.md) |
+| Historical M3 handoff | M3 implementation `5145178` was previously pushed and verified in PR #2. Its [validation](MILESTONE_3_VALIDATION.md) and later documentation commits remain historical; owner-reported M3 manual success adds no fresh hardware identifiers |
 | Browser hosting | User reports an earlier Vercel publication and successful current gameplay. No URL, deployed revision, hosting configuration, Git auto-deployment settings, or hosted milestone 3 verification has been supplied |
 
 Do not treat this file's intended workflow as evidence that a remote operation has succeeded.
@@ -72,7 +73,7 @@ Fresh M4 checks and limitations are recorded in [M4 validation](MILESTONE_4_VALI
 - Both case-sensitive remote branch names exist.
 - Remote default branch is `Dev`; local working branch is `Dev`.
 - The reviewed design baseline is reachable from both remote branches.
-- Milestone 4 completion requires verified commit/push results and an updated open `Dev` → `Main` PR #2, not a merge. Record actual results at handoff rather than treating the requested workflow as completed evidence.
+- M4 implementation `019f3f0` was pushed to `origin/Dev`; remote refs and PR #2 metadata confirmed the implementation SHA, unchanged `Main`, default `Dev`, and open/unmerged review state. This documentation handoff adds no source/test changes; its follow-up commit is reported through Git/PR metadata.
 - Review final local status and file scope; preserve unrelated changes.
 - Check relative document links and cross-document scope consistency.
 - Run type checks, meaningful simulation/upgrade/run/storage/input/settings/animation tests, production build, and actual Chrome/Edge run/UI/combat checks. Reuse earlier lockfile-install evidence when dependencies are unchanged; revalidate if changed. Record measured conditions, preserved simulation DPS, checkpoint failures/conflicts, pillar phase/eight-facing inspection, and limitations in [milestone 4 validation](MILESTONE_4_VALIDATION.md).
