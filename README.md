@@ -4,9 +4,9 @@ An action roguelite set in an exaggerated contemporary Polish urban world, with 
 
 [Public repository](https://github.com/DezertInn/KrewetekBuldogul) · [Open review PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2)
 
-**Current phase: milestone 3 short-run foundation, authorized 2026-10-10.** The TypeScript + Babylon.js + Vite prototype adds a three-stage gym run, two choices of one upgrade from three offers, browser-local safe checkpoints, and run results to the existing dummy and boxer modes. A procedural two-handed pillar swing adds visible preparation, whole-body contact, and follow-through. Gameplay/menu controls remain customizable. See [milestone 3 validation](docs/MILESTONE_3_VALIDATION.md) for current checks and limitations; [milestone 2](docs/MILESTONE_2_VALIDATION.md) and [milestone 1](docs/MILESTONE_1_VALIDATION.md) preserve earlier evidence.
+**Current phase: milestone 4 complete boxing-gym slice, authorized 2026-10-10.** Three levels, six authored rooms, Jabber/Counterpuncher/Clincher, Coach with two phases, two upgrade picks, separate safe M4 checkpoints, original native 3D models and non-musical SFX. Accepted movement/weapons/pillar feel and the resumable legacy M3 route remain. See [milestone 4 validation](docs/MILESTONE_4_VALIDATION.md) and [manual tests](docs/MILESTONE_4_MANUAL_TESTS.md); reports for milestones 1–3 preserve historical evidence.
 
-The three test stages reuse the gym and basic boxers; they do not implement the confirmed nine-level campaign. Bosses, additional biomes, production assets/audio, and paid services remain future work. The prototype is silent and uses procedural placeholders. The user reports that the earlier build is published on Vercel and works as expected; no deployment URL or hosted-build verification has been supplied for milestone 3.
+Legacy M3 retains its three test formations. M4 implements B01 only; the remaining six levels and two major encounters stay future work. Original 3D/SFX are implemented for this slice; final appearance and balance await owner review. The user reports an earlier Vercel publication, without a supplied URL or agent verification; no new hosting action is included.
 
 ## Run locally
 
@@ -17,7 +17,7 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-Open **http://127.0.0.1:5173/** in desktop Chrome or Edge. Choose a weapon and **Dummy practice**, **Boxer encounter**, or **Gym run · M3**, then start. All three weapons are available immediately; one stays equipped throughout a round or run. **Resume saved run** restores the last safe checkpoint when one is available. No separate engine editor or game account is required. Keep the terminal running; **Ctrl+C** stops the server.
+Open **http://127.0.0.1:5173/** in desktop Chrome or Edge. Choose a weapon and the primary **Boxing gym · M4** mode (or retained Dummy/Boxer/M3 practice modes), then start. All three weapons are available immediately; one stays equipped throughout a round or run. Separate **Resume saved M4 gym** and **Resume saved M3 run** restore the corresponding safe checkpoint. No separate engine editor or game account is required. Keep the terminal running; **Ctrl+C** stops the server.
 
 Use `npm.cmd` in Windows PowerShell if its script policy blocks `npm.ps1`; no policy change is needed. Fully restart VS Code after installing Node if the terminal cannot find it. Other desktop systems use the usual `npm` command but remain later validation targets.
 
@@ -46,6 +46,9 @@ Build before previewing or running browser tests. Browser tests start or reuse l
 
 ## Play the prototype
 
+Select **Boxing gym · M4**, choose gloves, pillar or rifle, then Start. Clear each encounter; after the first room of a level, approach the green exit and use the remappable Interact action (default E). Pick one upgrade after levels one and two; defeating Coach ends the slice. Separate **Resume saved M4 gym** and **Resume saved M3 run** buttons identify stored routes. Settings includes Master/Effects/UI/Ambience, mute, softer impacts and reduced decorative effects. No ambience recording or music is played. Models and sounds are generated from source; no external asset download is needed.
+
+
 - **Gloves:** quick four-strike combo, one nearest eligible target per strike.
 - **Grot rifle:** ranged hitscan blocked by cover, 20-round magazine, manual or automatic reload, unlimited reserve ammunition.
 - **Pillar:** slow committed sweep that can hit several eligible targets once each.
@@ -53,7 +56,7 @@ Build before previewing or running browser tests. Browser tests start or reuse l
 - **Boxer encounter:** dodge visible preparations, counter during recovery, and defeat the fixed three-boxer group. Player defeat and encounter completion offer retry or return to preparation.
 - **Gym run · M3:** clear three test formations while carrying health, ammunition, the selected weapon, and acquired effects forward. After stages one and two, choose one of three distinct unowned upgrades. The seven-entry prototype pool contains one effect from each confirmed source; exact IDs and adjustable values belong in [GDD section 6.5](docs/GAME_DESIGN_TEMPLATE.md#65-authorized-milestone-3-short-run-override).
 
-Pause to resume, restart, change weapon/round, or open settings. Restarting or changing preparation during a live round requires confirmation; it clears combat state while preserving controls. Interact at the preparation station to open the paused session menu. Weapons cannot be switched during combat.
+Pause to resume, restart, change weapon/round, or open settings. Restarting or changing preparation during a live round requires confirmation; it clears combat state while preserving controls. In practice/M3, interact at the preparation station to open the paused session menu; M4 uses interaction for unlocked room exits. Weapons cannot be switched during combat.
 
 Run checkpoints are saved before encounters and with cleared-stage reward offers, then after committing a choice. Closing during combat restores the prior safe entry; pending offers keep the same choices. Run effects and remaining simulation-time durations survive these boundaries. Victory, defeat, or abandonment settles the run once; starting another run resets combat upgrades while preserving control profiles. Save status reports unavailable/incompatible storage and tab conflicts. Explicit takeover or temporary play keeps a second tab from silently overwriting the saved run. There is no mid-attack save, cloud synchronization, or automatic localhost-to-Vercel transfer.
 
@@ -120,7 +123,9 @@ Documents distinguish **Confirmed** requirements, authorized adjustable prototyp
 | Document | Purpose |
 | --- | --- |
 | [Technical design](docs/TECHNICAL_DESIGN.md) | Architecture, input/storage, scope boundaries, compatibility, future milestones |
-| [Milestone 3 validation](docs/MILESTONE_3_VALIDATION.md) | Current run/save/upgrade/animation checks and limitations |
+| [Milestone 4 validation](docs/MILESTONE_4_VALIDATION.md) | Current B01/combat/save/3D/SFX checks, measurements and limitations |
+| [Milestone 4 manual tests](docs/MILESTONE_4_MANUAL_TESTS.md) | Polish slice acceptance scenarios and review log |
+| [Milestone 3 validation](docs/MILESTONE_3_VALIDATION.md) | Historical run/save/upgrade/animation checks and limitations |
 | [Milestone 3 manual tests](docs/MILESTONE_3_MANUAL_TESTS.md) | Polish scenarios with steps, expected results, priorities, and an execution log |
 | [Milestone 2 validation](docs/MILESTONE_2_VALIDATION.md) | Historical input/combat checks, damage/performance, manual checklist |
 | [Milestone 1 validation](docs/MILESTONE_1_VALIDATION.md) | Historical prototype/refinement evidence |
@@ -129,12 +134,12 @@ Documents distinguish **Confirmed** requirements, authorized adjustable prototyp
 | [Decision register](docs/DECISIONS_AND_OPEN_QUESTIONS.md) | Requirements, authorizations, accepted feel, open production decisions |
 | [Collaboration](docs/COLLABORATION.md) and [agent instructions](AGENTS.md) | Setup/access status, branch workflow, authorized work |
 
-`src/game/` owns simulation/tuning and upgrade effects, `src/run/` owns the test route, run lifecycle, and checkpoint journal, `src/input/` owns actions/settings/editor, `src/presentation/` builds the procedural scene and pillar poses, and `src/main.ts` integrates sessions/HUD. `tests/` covers rules, run/storage, input/settings, animation, and browser behavior; `docs/` owns design and evidence. Original `_TEMPLATE.md` filenames remain for stable links. `assets/` is reserved for later authorized production work. Dependencies, builds, browser reports, credentials, and private local data are excluded from commits.
+`src/game/` owns simulation/tuning and upgrade effects, `src/run/` owns separate M3/M4 routes, lifecycle and checkpoint journals, `src/input/` owns actions/settings/editor, `src/presentation/` builds original native 3D assets, gym kits and weapon poses, `src/audio/` owns procedural SFX and independent preferences, and `src/main.ts` integrates sessions/HUD. `tests/` covers rules, run/storage, input/settings, animation, and browser behavior; `docs/` owns design and evidence. Original `_TEMPLATE.md` filenames remain for stable links. The current models/SFX are reproducible from TypeScript source; no third-party model/audio files are used. Dependencies, builds, browser reports, credentials, and private local data are excluded from commits.
 
 ## Development and next steps
 
-Work on exact-case **Dev**, the local working and GitHub default branch. **Main** holds reviewed baselines. Milestone 3 continues the validated commit/push and existing [PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2) workflow; leave it unmerged and Dev active/default. Preserve unrelated work and coordinate file ownership; one agent manages the shared Git index and remote writes. [Collaboration status](docs/COLLABORATION.md) records the separately pending collaborator invitation.
+Work on exact-case **Dev**, the local working and GitHub default branch. **Main** holds reviewed baselines. Milestone 4 continues the validated commit/push and existing [PR #2](https://github.com/DezertInn/KrewetekBuldogul/pull/2) workflow; leave it unmerged and Dev active/default. Preserve unrelated work and coordinate file ownership; one agent manages the shared Git index and remote writes. [Collaboration status](docs/COLLABORATION.md) records the separately pending collaborator invitation.
 
-Next, use the [manual test scenarios](docs/MILESTONE_3_MANUAL_TESTS.md) to validate the complete short run with each weapon, pending-offer reloads, safe-entry recovery, and the heavy pillar swing, then collect player feedback. Continue physical controller coverage and review the [proposed visual choices](docs/ART_DESIGN_TEMPLATE.md#21-proposed-visual-review-after-milestone-1). Milestone 4 would add the first complete biome and its miniboss with separately approved art/audio; production assets, paid services, publishing a new build, and merging Main still require their own authorization.
+Next, use the [M4 manual test scenarios](docs/MILESTONE_4_MANUAL_TESTS.md) and actual captured material to assess the new gym, silhouettes, heavy swing, threat readability and SFX. Continue exact physical controller coverage. Final production appearance/balance, later biomes, paid services, public deployment and Main merge require separate decisions. The user reported M3 manual tests passed; this is not new device metadata.
 
 Project licensing and targeted production rights questions remain TBD; no third-party asset rights are granted by this repository.

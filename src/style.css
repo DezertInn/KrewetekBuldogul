@@ -652,6 +652,14 @@ kbd {
 .controls-help { column-gap:10px; row-gap:7px; }
 .reward-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:18px 0; }
 .reward-choice { min-height:145px; }
+.presentation-settings { margin:20px 0 4px; border:1px solid #52727a; border-radius:8px; padding:14px; }
+.presentation-settings legend { padding:0 8px; font-weight:700; color:#ffdc69; }
+.presentation-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:14px 0; }
+.presentation-grid label { flex-wrap:wrap; justify-content:space-between; }
+.presentation-grid input[type=range] { width:100%; accent-color:#ffdc69; }
+.presentation-grid input[type=checkbox] { accent-color:#ffdc69; }
+.round-options { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.objective-hint { color:#f4d486; }
 .reward-choice>span { display:block; line-height:1.4; letter-spacing:0; }
 .save-status { font-size:11px; line-height:1.5; color:#476a61; margin:12px 0; }
 .menu-upgrades, .run-summary { font-size:12px; line-height:1.55; color:#305455; }

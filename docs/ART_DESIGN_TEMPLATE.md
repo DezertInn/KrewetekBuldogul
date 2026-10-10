@@ -2,13 +2,13 @@
 
 **Document status:** Populated design draft v0.1. Creative requirements are confirmed; detailed production choices await review.
 
-**Prepared:** 2026-10-09; updated 2026-10-10. **Art approval owner:** TBD. Milestone 3 continues separately authorized original procedural placeholders and adds a heavy pillar swing; no production assets are approved.
+**Prepared:** 2026-10-09; updated 2026-10-10. **Art approval owner:** TBD. Milestone 4 authorizes original refined native 3D/SFX for B01; final appearance and remaining full-game assets await review.
 
 ## 1. Scope and status
 
 **Confirmed** identifies the user's requirements. **Proposed** identifies recommendations, including every new name, palette, dimension, asset budget, animation treatment and production method below. **TBD** identifies a decision needing further input. Unless a paragraph or table explicitly says Confirmed, it describes a Proposed starting point.
 
-This document owns presentation, audio direction and asset specifications. [Game Design](GAME_DESIGN_TEMPLATE.md) owns narrative, abilities, attack timings, power-up effects, enemy behavior and balance. [Technical Design](TECHNICAL_DESIGN.md) owns architecture, global performance targets and compatibility. Shared decisions and prioritized questions live in [Decisions and Open Questions](DECISIONS_AND_OPEN_QUESTIONS.md). Milestone 3 authorizes procedural run/reward/results UI and a heavy pillar animation alongside the existing gym/weapons/boxers. Production assets/audio and milestones 4 and later remain outside scope.
+This document owns presentation, audio direction and asset specifications. [Game Design](GAME_DESIGN_TEMPLATE.md) owns narrative, abilities, attack timings, power-up effects, enemy behavior and balance. [Technical Design](TECHNICAL_DESIGN.md) owns architecture, global performance targets and compatibility. Shared decisions and prioritized questions live in [Decisions and Open Questions](DECISIONS_AND_OPEN_QUESTIONS.md). M3 established procedural run/reward/results and the heavy swing. Current M4 authorization adds the complete B01 treatment in section 2.4; remaining biomes/full campaign, music, later milestones and public deployment stay outside scope.
 
 | Area | Confirmed creative requirement |
 | --- | --- |
@@ -19,7 +19,7 @@ This document owns presentation, audio direction and asset specifications. [Game
 | Power-up sources | Exactly seven: Bóg, Ojczyzna, Orzeł Biały w koronie, Szacunek ulicy, Fryderyk Chopin, Maria Skłodowska-Curie, Mikołaj Kopernik. |
 | Sound | Pleasant, cartoonish sound effects. No music, including musical reward stingers or Chopin recordings. |
 | Input and delivery | Remappable gameplay and menu actions for keyboard/mouse, DualShock 4 and Xbox One/Series; USB/Bluetooth validation on compatible hardware. Windows desktop browsers first; other desktop systems later. |
-| Workflow | Free tools and code-first development through Codex in VS Code. TypeScript + Babylon.js + Vite and necessary free project/test tooling continue for milestone 3; production assets remain outside authorization. |
+| Workflow | Free tools and code-first development through Codex in VS Code. TypeScript + Babylon.js + Vite and necessary free project/test tooling continue for milestone 4, including original native 3D/SFX for B01; remaining production assets need later authorization. |
 
 ## 2. Visual direction
 
@@ -76,7 +76,15 @@ The pillar uses an explicit two-handed grip with both hands attached to the shaf
 
 GDD [section 6.5](GAME_DESIGN_TEMPLATE.md#65-authorized-milestone-3-short-run-override) owns this override and preserves base combat timings/damage/range. Decorative mesh extents never grant reach or determine hit timing. Reach/cone/target feedback uses effective gameplay range after a declared upgrade. After a final killing hit, combat ends and the run/director/checkpoint settles immediately; the full-arena reward/results overlay stays hidden while the remaining cosmetic swing and recovery finish, preserving their visibility. Hidden choices do not consume confirmation input. Settings and Back/discard remain explicit menu actions; settings, confirmations, hide/focus loss freeze the cosmetic clock. Blur reveals the menu while the animation is frozen; returning to the unobscured finisher resumes only its cosmetic clock. The ordinary reward/results menu appears after the cosmetic pose returns to ready. This presentation delay never delays save/reward settlement or advances gameplay/run timers.
 
-Review phase sequences, misses/hits/cleave, repeated swings, movement, dash cancellation, pause/resume, and last-enemy completion at the actual orthographic camera distance. Inspect eight facings at 1280×720 and 1920×1080 and actual rendered hand-to-grip contacts. [Milestone 3 validation](MILESTONE_3_VALIDATION.md) records checks and limitations; passing procedural readability checks does not select production palette, proportions, materials, assets, or final animation style. A later milestone 4 may develop the first complete biome/miniboss and separately approved art/audio.
+Review phase sequences, misses/hits/cleave, repeated swings, movement, dash cancellation, pause/resume, and last-enemy completion at the actual orthographic camera distance. Inspect eight facings at 1280×720 and 1920×1080 and actual rendered hand-to-grip contacts. [Milestone 3 validation](MILESTONE_3_VALIDATION.md) records checks and limitations; passing procedural readability checks does not select production palette, proportions, materials, assets, or final animation style. Milestone 4 now authorizes the B01 treatment in section 2.4; this historical M3 presentation boundary remains evidence for that version.
+
+### 2.4 Authorized milestone 4 native 3D and SFX
+
+The owner explicitly authorized a refined original B01 treatment on 2026-10-10. The implemented variant is adjustable and awaits final owner visual/feel review. It uses native sculpted meshes, a two-bone limb rig, an original adult face/hair/clothing/scarf, three spatial weapons, distinguishable boxer/Coach silhouettes and a modular three-theme gym. This is a geometry/rig/material redesign, not recoloring M3 placeholders. No direct recognizable real-person likeness is intended.
+
+Reproduce assets from [sculpt](../src/presentation/sculpt.ts), [gym room kit](../src/presentation/gym-room.ts), [weapon poses](../src/presentation/weapon-poses.ts), [pillar poses](../src/presentation/pillar-animation.ts) and [scene](../src/presentation/scene.ts). No external meshes, textures, fonts or audio recordings are introduced. Rendered limb grips follow weapon-local attachments. Essential cone/lane/circle/guard/phase cues follow simulation geometry; decorative occluders fade and reduced effects retain threats. Check eight facings at both target resolutions and terminal grip continuity in actual captures, with results in [M4 validation](MILESTONE_4_VALIDATION.md).
+
+[Audio source](../src/audio/audio.ts) deterministically synthesizes filtered noise percussion with soft gain envelopes: weapon attack/miss/hit, steps/dash/reload, warnings/phase changes and UI confirm/reward/error. No oscillators, melody, music bus, stingers, recordings, voices or crowd chanting are used. Ambience has a reserved independent mixer preference and currently no playback. Cap voices at 24, coalesce repeated events and prioritize warnings. Master/Effects/UI/Ambience, mute, softer intensity and reduced visuals persist separately from controls/runs. Explicit interaction unlocks AudioContext; refusal/API absence remains playable. Pause/focus/hidden gates stop gameplay voices and drop old events.
 
 ## 3. Camera and composition
 
@@ -249,7 +257,7 @@ Use an urban editorial style: rectangular cards, slightly offset printed borders
 
 Begin with a 24-voice global cap and at most three concurrent instances of one repeated effect. Merge low-priority same-family events within 50 ms into one representative cue; preserve distinct imminent warnings ahead of decoration. Footsteps play once per foot contact. Frequent effects start around 0.05–0.3 seconds with softened edges; longer sounds need a gameplay reason. Shuffle samples without immediate repeat; narrow ±3% pitch variation may apply to non-critical impacts, never automatic pitch ladders. Validate during the future stress encounter.
 
-Offer reduced-intensity mixing with narrower dynamics, softer transients and quieter repeated impacts. Loudness never scales endlessly with enemy count. Pause gameplay audio on pause/focus loss; UI sounds continue only for intentional menu input. The TDD owns browser unlock/resume and codec selection. No sound has been created, mixed or tested.
+Offer reduced-intensity mixing with narrower dynamics, softer transients and quieter repeated impacts. Loudness never scales endlessly with enemy count. Pause gameplay audio on pause/focus loss; UI sounds continue only for intentional menu input. The TDD owns browser unlock/resume and codec selection. M4 implements original procedural noise SFX and independent mixer preferences as described in section 2.4. Browser event/gate evidence is in M4 validation; subjective listening and full production mix remain for owner review.
 
 ## 12. Asset pipeline and budgets
 
@@ -276,7 +284,7 @@ Load lightweight UI for all three weapon choices, then the shared hero, selected
 
 ## 13. Prioritized asset inventory
 
-These are future production specifications, not produced assets. Current milestone 3 authorization covers only the procedural presentation in sections 2.2–2.3. After separate production authorization, **P0** validates the pipeline, **P1** covers initial content, **P2** is optional polish needing review. The production inventory below is not authorization to build it now.
+These are future production specifications, not produced assets. Milestone 4 authorizes the B01 implementation in section 2.4. The remaining inventory below describes future full-game production specifications. After separate production authorization, **P0** validates the pipeline, **P1** covers initial content, **P2** is optional polish needing review. The production inventory below is not authorization to build it now.
 
 | Priority / inventory ID | Deliverable and content mapping | Approval criterion |
 | --- | --- | --- |

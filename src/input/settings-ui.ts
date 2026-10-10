@@ -46,7 +46,7 @@ export class SettingsUI {
   private calibrationDraft: Profile | null = null;
   private status = '';
   private refreshAt = 0;
-  constructor(private input: Controls, private callbacks: { onClose: () => void }) {
+  constructor(private input: Controls, private callbacks: { onClose: () => void; presentation?: { markup(): string; bind(container: HTMLElement): void } }) {
     this.element = document.createElement('div'); this.element.className = 'settings-overlay'; this.element.id = 'controls-settings'; this.element.hidden = true;
     document.body.append(this.element);
   }
@@ -85,7 +85,8 @@ export class SettingsUI {
       ${this.kind === 'controller' ? `<div class="settings-toolbar"><label>Active controller <select id="active-controller"><option value="">Choose connected device</option>${this.input.listControllers().map(p => `<option value="${p.index}" ${p.active ? 'selected' : ''}>${escapeHtml(p.id)} · ${p.mapping || 'nonstandard'}</option>`).join('')}</select></label><button id="refresh-controllers">Refresh controllers</button><button id="controller-guide">Guided mapping</button><button id="confirm-mapping">Use this profile for this controller</button></div>` : ''}
       <p id="settings-connection"></p><div class="settings-tabs"><button id="bindings-tab" aria-pressed="${this.tab === 'bindings'}">Bindings</button><button id="calibration-tab" aria-pressed="${this.tab === 'calibration'}">Calibration & behavior</button></div>
       <div class="settings-scroll">${this.tab === 'bindings' ? `<p>Each row replaces its mapping after preview. Enable “Keep existing alternatives” to add instead. Bindings may be reused in different contexts. Keyboard labels show stored physical keys or characters explicitly.</p><table class="bindings-table"><thead><tr><th>Action / context</th><th>Current bindings</th><th>Reset</th></tr></thead><tbody>${ACTION_IDS.map(action => `<tr><th scope="row">${ACTIONS[action][0]}<small>${ACTIONS[action][1]}</small></th><td><button class="binding-button" id="bind-${action}" data-action="${action}" aria-label="Rebind ${ACTIONS[action][0]}">${escapeHtml(profile.bindings[action].map(b => bindingLabel(b, family)).join(' / ') || 'Unbound')}</button></td><td><button data-clear="${action}" aria-label="Clear ${ACTIONS[action][0]}">Clear</button><button data-restore="${action}" aria-label="Restore ${ACTIONS[action][0]}">Default</button></td></tr>`).join('')}</tbody></table>` : this.calibrationMarkup(profile)}
-      <p class="settings-limitations">Only inputs exposed by this browser can be captured. OS/browser shortcuts and controller system buttons may be reserved. Motion sensors, touchpad gestures and rumble are not mapped here. Left-click still selects visible UI controls; a mapped left-click menu action works on the menu background. Unknown controllers use neutral button/axis labels; use Guided mapping and verify each action. Device names identify stored assignments, not transient connection indices.</p></div>
+      <p class="settings-limitations">Only inputs exposed by this browser can be captured. OS/browser shortcuts and controller system buttons may be reserved. Motion sensors, touchpad gestures and rumble are not mapped here. Left-click still selects visible UI controls; a mapped left-click menu action works on the menu background. Unknown controllers use neutral button/axis labels; use Guided mapping and verify each action. Device names identify stored assignments, not transient connection indices.</p>
+      ${this.callbacks.presentation?.markup() ?? ''}</div>
       <footer><p id="settings-status" role="status">${escapeHtml(this.status || this.input.settings.status)}</p><div class="settings-toolbar"><button id="restore-profile">Restore this profile’s defaults</button><button id="recover-controls">Recover last working controls</button><button id="settings-done" class="primary-button">Done</button></div></footer>
     </section>`;
     this.button('settings-close', () => this.close()); this.button('settings-done', () => this.close());
@@ -113,6 +114,7 @@ export class SettingsUI {
       const action = button.dataset.restore as ActionId; const next = structuredClone(this.profile()); const defaults = defaultProfile(this.kind); convertKeySemantics(defaults, next.calibration.keySemantics); next.bindings[action] = defaults.bindings[action]; const errors = validateProfile(next); this.status = errors.length ? `Cannot restore this action: ${errors.join(' ')} Use profile defaults or resolve the conflict first.` : this.input.settings.applyProfile(next).join(' ') || `${ACTIONS[action][0]} restored.`; this.render(`bind-${action}`);
     }));
     if (this.tab === 'calibration') this.bindCalibration();
+    this.callbacks.presentation?.bind(this.element);
     (this.element.querySelector<HTMLElement>(`#${focusId ?? 'settings-close'}`) ?? this.element.querySelector<HTMLElement>('button'))?.focus({ preventScroll: true });
   }
   private activateProfile(): void {

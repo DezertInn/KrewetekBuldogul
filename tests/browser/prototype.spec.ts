@@ -228,7 +228,7 @@ test('simulated standard controller menus, analog input and disconnect gates', a
       await sampledFrames();
     }, { index, down });
   };
-  await openGym(page); await delay(page, 100);
+  await openGym(page); await page.locator('#choose-dummy').click(); await page.locator('#start-button').focus(); await delay(page, 100);
   await button(0, true); await button(0, false);
   expect((await snapshot(page)).mode).toBe('playing');
   await page.evaluate(() => { (window as any).__testPad.axes = [0.5, 0, 0, 0]; }); await delay(page, 250);

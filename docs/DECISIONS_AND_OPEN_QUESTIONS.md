@@ -1,13 +1,13 @@
 # Decisions and open questions
 
-Design baseline and milestone 3 decision register; updated 2026-10-10 (Europe/Warsaw). Status changes require an explicit decision or verified action; proposals are not approvals. The user supplied the creative brief, authorized milestones 1–3, accepted refined movement/glove feel, and requested a heavy pillar swing. The original template filenames are retained; production design details remain drafts.
+Design baseline and milestone 4 decision register; updated 2026-10-10 (Europe/Warsaw). Status changes require an explicit decision or verified action; proposals are not approvals. The user supplied the creative brief, authorized milestones 1–4, accepted refined movement/glove feel, and requested a heavy pillar swing. The original template filenames are retained; production design details remain drafts.
 
 ## Confirmed requirements
 
 | ID | Requirement |
 | --- | --- |
 | R01 | Project and public repository name: KrewetekBuldogul |
-| R02 | Milestone 1 authorized: TypeScript + Babylon.js + Vite playable technical prototype, one gym room/player, boxing gloves, training dummy, initial keyboard/mouse/gamepad controls, and validation. Milestone 2 extends it under R29–R32; milestone 3 adds the bounded subset under R33–R36. Milestones 4 and later remain outside authorization |
+| R02 | Milestone 1 authorized: TypeScript + Babylon.js + Vite playable technical prototype, one gym room/player, boxing gloves, training dummy, initial keyboard/mouse/gamepad controls, and validation. Milestone 2 extends it under R29–R32; milestone 3 adds the bounded subset under R33–R36. Milestone 4 is authorized by the later explicit request below; later milestones remain outside authorization |
 | R03 | Exact permanent branches: `Main` and `Dev`; `Dev` is to be remote default and local working branch |
 | R04 | Action roguelite; Hades reference for responsive combat, movement, encounters, and repeated runs |
 | R05 | One handsome, charming, funny adult Polish football hooligan protagonist in bright clothing with a prominent red-and-white scarf |
@@ -43,26 +43,31 @@ Design baseline and milestone 3 decision register; updated 2026-10-10 (Europe/Wa
 | R35 | Procedural two-handed heavy pillar animation with visible whole-body preparation, active swing, follow-through and recovery; preserve baseline combat timing/damage/range/cancellation. Rendering and terminal cosmetic follow-through never resolve gameplay hits or advance reward settlement |
 | R36 | Milestone 3 continues the validated Dev/push/open PR #2 workflow; keep Dev active/default, Main unmerged, and historical evidence intact. Production assets/audio, bosses/additional biomes, paid services, and new public deployment actions remain outside this request |
 | R37 | User reports an earlier Vercel publication and successful current gameplay. No URL, deployed revision, hosting settings, new physical hardware matrix, hosted milestone 3 check, or final art approval has been verified from that report |
+| R38 | M4 explicitly authorized 2026-10-10: complete B01L01–03 with six authored rooms, three boxer roles/Coach, exactly two existing-pool rewards, original native 3D rig/materials and non-musical SFX; source/test/docs validation and Dev/PR #2 workflow. Adjustable new tuning/appearance remains for final owner review |
+| R39 | Separate M4 content/save namespace and strict room/phase IDs; preserve resumable M3 data/route and all accepted weapon/movement/pillar rules. No third reward/heal/stadium transition in M4; nine-level full scope remains |
+| R40 | Additional biomes/full campaign/new weapons/sources, music/voices, paid services, public deployment and Main merge remain outside M4 authorization |
 
 The GDD owns game rules, balance calculations, and content identifiers. The art/audio draft owns presentation and asset specifications. The TDD owns architecture, platform constraints, and technical validation. Their details are proposals unless explicitly tied to a confirmed requirement above.
+
+
 
 ## Proposals awaiting review
 
 | ID | Proposal | Why it is provisional / what could change it |
 | --- | --- | --- |
-| P01 | TypeScript + Babylon.js for production browser 3D | **Approved for milestones 1–3 with Vite.** The wider production choice remains subject to measured performance/compatibility; exact installed dependencies are recorded in package.json/package-lock.json |
-| P02 | Real-time 3D with a fixed orthographic isometric camera and combat on a two-dimensional plane | **Approved for milestones 1–3.** Exact production camera tuning and asset workflow remain Proposed; this does not claim to reproduce Hades II internals |
+| P01 | TypeScript + Babylon.js for production browser 3D | **Approved for milestones 1–4 with Vite.** The wider production choice remains subject to measured performance/compatibility; exact installed dependencies are recorded in package.json/package-lock.json |
+| P02 | Real-time 3D with a fixed orthographic isometric camera and combat on a two-dimensional plane | **Approved for milestones 1–4.** Exact production camera tuning and asset workflow remain Proposed; this does not claim to reproduce Hades II internals |
 | P03 | Windows 11 with current stable Chrome, Edge, and Firefox for initial validation | Windows-first scope is confirmed; minimum OS/browser versions and baseline hardware are proposed |
 | P04 | Identify exact controller revisions, firmware, and Bluetooth adapters before compatibility testing | USB/Bluetooth scope is confirmed; individual hardware capabilities must be verified |
-| P05 | Single-player local runs and safe saves | **Approved for the milestone 3 three-stage prototype.** Broader profile/permanent progression remains Proposed; networking/cloud saves are not confirmed requirements |
-| P06 | Data-driven content and versioned run saves | Milestone 3 authorizes a separate test route, stable seeded offers, and transactional versioned safe checkpoints. Generalized production catalogs, full nine-level content, and save import/export/migrations beyond supported current records remain future work |
+| P05 | Single-player local runs and safe saves | **Approved for the M3 test route and M4 B01 slice.** Broader profile/permanent progression remains Proposed; networking/cloud saves are not confirmed requirements |
+| P06 | Data-driven content and versioned run saves | M3 and M4 authorize separate routes/namespaces, stable seeded offers and transactional safe checkpoints. Generalized production catalogs, full nine-level content and save import/export/migrations beyond supported records remain future work |
 | P07 | Historical proposed production baseline of 100 sustained single-target DPS for each melee weapon and 90 for the rifle | Section 6.2 records an earlier production proposal, not current prototype settings. Section 6.4 authorizes the adjusted milestone 2 benchmark while preserving the confirmed relative relationship. Final production timing/damage and practical encounter balance remain subject to playtesting and review |
 | P08 | Fixed nine-level route, with minibosses ending B01L03/B02L03 and the final boss ending B03L03 | Counts and setting order are confirmed; placements, room composition, enemy variants, and authored/random encounter details are proposed |
 | P09 | Borys “Błysk” Rudzki as the fictional protagonist; a separate fictional president antagonist | Name, narrative premise, relationship, and president interpretation await creative approval; no real-person identity is implied |
 | P10 | Three example upgrades per source, with explicit triggers, stacking, finite proc rules, and run-only progression | The seven sources are confirmed; seven selected examples are authorized prototype defaults under R33. The full 21-entry sample and final production quantity remain Proposed |
 | P11 | Painterly stylized 3D urban presentation, reusable environment kits, prioritized original assets, and non-musical sound event mixing | User feedback rejected the current placeholder quality. Review the [Proposed visual brief](ART_DESIGN_TEMPLATE.md#21-proposed-visual-review-after-milestone-1) for palette, silhouette, materials/textures, and animation feel before selecting a production target; camera, rigs, budgets, asset scope, and mix values also remain provisional |
 
-The project records exact direct versions in [package.json](../package.json) and the dependency graph in [package-lock.json](../package-lock.json). Node.js 24.21.0 LTS and npm 11.19.0 were verified for milestone 1 and reused for milestone 3; use `npm.cmd` in Windows PowerShell where the script wrapper is blocked. [Milestone 1 validation](MILESTONE_1_VALIDATION.md) and [milestone 2 validation](MILESTONE_2_VALIDATION.md) preserve historical evidence; [milestone 3 validation](MILESTONE_3_VALIDATION.md) records current checks separately from the TDD's proposed production budgets. No production budget is accepted merely because the small prototype runs.
+The project records exact direct versions in [package.json](../package.json) and the dependency graph in [package-lock.json](../package-lock.json). Node.js 24.21.0 LTS and npm 11.19.0 were verified for milestone 1 and reused for milestone 4; use `npm.cmd` in Windows PowerShell where the script wrapper is blocked. [Milestone 1 validation](MILESTONE_1_VALIDATION.md) and [milestone 2 validation](MILESTONE_2_VALIDATION.md) preserve historical evidence; [milestone 4 validation](MILESTONE_4_VALIDATION.md) records current checks separately from the TDD's proposed production budgets. No production budget is accepted merely because the small prototype runs.
 
 ## Manual feedback and retest status
 
@@ -79,7 +84,7 @@ The project records exact direct versions in [package.json](../package.json) and
 
 **User-reported current observation, 2026-10-10:** the earlier game is published on Vercel and current play works as expected. This supports continuing the prototype; the deployment URL/configuration/build and exact browser/device metadata were not supplied. The new column animation responds to the reported weak existing swing and does not approve final art.
 
-Next manual retest: complete the short run with all three weapons, reload safe entries/pending offers, compare the heavy column swing and last-enemy follow-through, then verify remapping and DualShock USB safety with exact available metadata. [Milestone 3 validation](MILESTONE_3_VALIDATION.md) owns current check results; the older reports remain historical evidence. This register records feedback and authorization boundaries.
+The user reports M3 manual tests passed and everything works as expected (2026-10-10); no exact build/browser/physical-device metadata was provided. Next owner review: [M4 manual scenarios](MILESTONE_4_MANUAL_TESTS.md), actual 3D/animation/audio evidence and physical device safety. [Milestone 4 validation](MILESTONE_4_VALIDATION.md) owns fresh measured results; older reports remain historical.
 
 ## Initial clarification batch
 
@@ -98,7 +103,7 @@ Private account details and contact information belong in private setup context,
 
 ## Prioritized open questions
 
-These are review questions for future design/production decisions, not blockers to the explicitly authorized milestone 3. Proposed answers live in the linked design documents; no unanswered question authorizes later implementation. Prototype defaults may be revised without changing the confirmed creative scope.
+These are review questions for future design/production decisions, not blockers to the explicitly authorized milestone 4. Proposed answers live in the linked design documents; no unanswered question authorizes later implementation. Prototype defaults may be revised without changing the confirmed creative scope.
 
 | Priority | Decision for the owner | Current proposal / consequence |
 | --- | --- | --- |
@@ -106,8 +111,8 @@ These are review questions for future design/production decisions, not blockers 
 | Q02 | After milestone 2 testing, retain or revise the equipment and rifle resource model for production? | One weapon per test session, primary attack/dash, and magazine/reload are now authorized prototype defaults. Broader production rules remain reviewable rather than blocking this implementation |
 | Q03 | Which final production damage/timing values should follow the three-weapon test? | The GDD section 6.4 prototype benchmark supersedes older current-tuning assumptions while preserving accepted glove feel. Assess range, stagger, exposure, crowd value, and encounter uptime separately from measured single-target DPS; final production values remain open |
 | Q04 | Approve the proposed level lengths, room composition, fixed route, boss placements, and ordinary enemy roster? | Nine levels and the three major encounters are confirmed; detailed layouts, variants, pacing, and encounter density remain proposed |
-| Q05 | Which upgrades and finite effect rules should become production content after prototype testing? | Seven selected effects, stable three-choice rewards, and normalized Curie credit are authorized for M3 only; full catalog and exact production quantity remain Proposed |
-| Q06 | What production save/profile progression should follow the short-run checkpoint prototype? | M3 local safe saves/reset boundaries are authorized; multiplayer, cloud saves, permanent progression, native builds, and mobile/touch remain unconfirmed scope |
+| Q05 | Which upgrades and finite effect rules should become production content after prototype testing? | Seven selected effects, stable three-choice rewards and normalized Curie credit are authorized for M3 and reused in M4; full catalog and exact production quantity remain Proposed |
+| Q06 | What production save/profile progression should follow the short-run checkpoint prototype? | Separate M3/M4 local safe saves and reset boundaries are authorized; multiplayer, cloud saves, permanent progression, native builds and mobile/touch remain unconfirmed scope |
 | Q07 | Choose the palette, character proportions, surface treatment, and grounded/comic animation direction; approve remaining production camera/pipeline/performance targets? | The [visual-review brief](ART_DESIGN_TEMPLATE.md#21-proposed-visual-review-after-milestone-1) responds to dissatisfaction with the placeholders. Choose a coherent hero-and-gym target before production asset authorization; production budgets also require measured evidence |
 | Q08 | What audience/age target, supported text languages, voice scope, and accessibility defaults should be finalized? | Review GDD/ADD proposals; preserve Polish glyph support, visual equivalents for sound, full action remapping, and confirmed no-music direction |
 | Q09 | Which exact Windows/browser baseline and controller revisions, firmware, USB/Bluetooth adapters are available for future validation? | P03/P04; the original prototype has a general user-reported DualShock USB/Chrome pass, without detailed identifiers. Feel acceptance adds no hardware metadata. Complete milestone 2 physical remapping/safety tests and other combinations; do not assume every Xbox One revision supports Bluetooth |
@@ -126,6 +131,8 @@ These are review questions for future design/production decisions, not blockers 
 | 2026-10-09 | User's “yes to all questions” and explicit milestone 2 prompt | Accept refined movement/reach/punch feel; authorize R29–R32 input/settings, three weapons, bounded boxer encounter, procedural presentation, checks, and Dev/PR #2 workflow. The GDD section 6.4 prototype benchmark supersedes older tuning assumptions while final production values remain open. Add no hardware or visual-approval claim | AGENTS, README, GDD, art/audio draft, TDD, milestone 2 validation, Collaboration, this register |
 | 2026-10-10 | User's explicit milestone 3 implementation request | Authorize R33–R36 short run, seven defaults, checkpoint/recovery/results, and heavy procedural pillar swing. Preserve accepted baseline combat, historical reports, and Dev/PR #2 workflow; defer production campaign/art/audio/bosses and new publishing actions | AGENTS, README, GDD section 6.5, TDD persistence boundary, art section 2.3, milestone 3 validation, Collaboration, this register |
 | 2026-10-10 | User's Vercel/current-game report | Record R37 as a user-reported observation. No hosting URL/settings/deployed revision or agent-tested milestone 3 deployment follows from the report | README, TDD, Collaboration, milestone 3 validation, this register |
+| 2026-10-10 | User's M3 manual-test report | Record successful owner testing without supplied exact build/browser/device metadata; preserve earlier hardware evidence as historical | Collaboration, milestone 4 validation, this register |
+| 2026-10-10 | User's explicit milestone 4 implementation request | Authorize R38–R40: B01L01–03/six rooms, three boxer roles/Coach, two existing-pool rewards, separate M4 safe saves, original native 3D/non-musical SFX, validation and the existing Dev/open PR #2 workflow. Preserve M3, accepted combat and the nine-level future scope; final look/mix/feel remains owner review | AGENTS, README, GDD 6.6, art 2.4, TDD, M4 validation/manual tests, Collaboration, this register |
 
 ## Decision procedure
 

@@ -4,25 +4,26 @@ import { validRunId, validateRunCheckpoint, type RunCheckpoint } from './directo
 export const RUN_DATABASE_NAME = 'krewetek-buldogul-m3-runs';
 export const RUN_TAB_OWNER_KEY = `${RUN_DATABASE_NAME}:tab-owner`;
 export type StorageStatus = 'ok' | 'empty' | 'unavailable' | 'conflict' | 'unsupported' | 'corrupt' | 'settled';
-export interface StorageResult {
+export interface PersistedRunCheckpoint { runId: string; phase: string }
+export interface StorageResult<T extends PersistedRunCheckpoint = RunCheckpoint> {
   status: StorageStatus;
-  checkpoint?: RunCheckpoint;
+  checkpoint?: T;
   revision?: number;
   recovered?: boolean;
   message: string;
 }
-export interface CheckpointEnvelope {
+export interface CheckpointEnvelope<T extends PersistedRunCheckpoint = RunCheckpoint> {
   schemaVersion: number;
   contentVersion: string;
   buildId: string;
   revision: number;
-  checkpoint: RunCheckpoint;
+  checkpoint: T;
 }
-export interface RunJournal {
+export interface RunJournal<T extends PersistedRunCheckpoint = RunCheckpoint> {
   formatVersion: number;
   revision: number;
-  current: CheckpointEnvelope | null;
-  previous: CheckpointEnvelope | null;
+  current: CheckpointEnvelope<T> | null;
+  previous: CheckpointEnvelope<T> | null;
   settledRunIds: string[];
   lease: { owner: string; expiresAt: number } | null;
 }
@@ -40,6 +41,13 @@ export interface RunStorageOptions {
   now?: () => number;
   leaseMs?: number;
   heartbeat?: boolean;
+}
+export interface RunStorageCodec<T extends PersistedRunCheckpoint> {
+  databaseName: string;
+  schemaVersion: number;
+  contentVersion: string;
+  buildId: string;
+  validate(value: unknown): value is T;
 }
 export interface TabIdentityLease { ownerId: string; release(): void }
 export interface TabIdentityAdapter {
@@ -88,7 +96,7 @@ function browserTabIdentity(databaseName: string): TabIdentityAdapter | null {
 const clone = <T>(value: T): T => structuredClone(value);
 const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 const natural = (value: unknown): value is number => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
-const freshJournal = (): RunJournal => ({ formatVersion: 1, revision: 0, current: null, previous: null, settledRunIds: [], lease: null });
+const freshJournal = <T extends PersistedRunCheckpoint>(): RunJournal<T> => ({ formatVersion: 1, revision: 0, current: null, previous: null, settledRunIds: [], lease: null });
 
 function journalStatus(value: unknown): StorageStatus | null {
   if (!object(value)) return 'corrupt';
@@ -98,17 +106,17 @@ function journalStatus(value: unknown): StorageStatus | null {
   if (!('current' in value) || !('previous' in value)) return 'corrupt';
   return null;
 }
-function envelopeStatus(value: unknown, revision: number): StorageStatus | null {
+function envelopeStatus<T extends PersistedRunCheckpoint>(value: unknown, revision: number, codec: RunStorageCodec<T>): StorageStatus | null {
   if (!object(value)) return 'corrupt';
   // Incompatible schema/content is preserved verbatim, including a newer build's save.
-  if ((natural(value.schemaVersion) && value.schemaVersion !== RUN_SCHEMA_VERSION) || (typeof value.contentVersion === 'string' && value.contentVersion !== RUN_CONTENT_VERSION)) return 'unsupported';
-  if (value.schemaVersion !== RUN_SCHEMA_VERSION || value.contentVersion !== RUN_CONTENT_VERSION || typeof value.buildId !== 'string' || value.buildId.length < 1 || value.buildId.length > 100 || !natural(value.revision) || value.revision > revision || !validateRunCheckpoint(value.checkpoint) || value.checkpoint.phase === 'results') return 'corrupt';
+  if ((natural(value.schemaVersion) && value.schemaVersion !== codec.schemaVersion) || (typeof value.contentVersion === 'string' && value.contentVersion !== codec.contentVersion)) return 'unsupported';
+  if (value.schemaVersion !== codec.schemaVersion || value.contentVersion !== codec.contentVersion || typeof value.buildId !== 'string' || value.buildId.length < 1 || value.buildId.length > 100 || !natural(value.revision) || value.revision > revision || !codec.validate(value.checkpoint) || value.checkpoint.phase === 'results') return 'corrupt';
   return null;
 }
-function makeEnvelope(checkpoint: RunCheckpoint, revision: number): CheckpointEnvelope {
-  return { schemaVersion: RUN_SCHEMA_VERSION, contentVersion: RUN_CONTENT_VERSION, buildId: RUN_BUILD_ID, revision, checkpoint: clone(checkpoint) };
+function makeEnvelope<T extends PersistedRunCheckpoint>(checkpoint: T, revision: number, codec: RunStorageCodec<T>): CheckpointEnvelope<T> {
+  return { schemaVersion: codec.schemaVersion, contentVersion: codec.contentVersion, buildId: codec.buildId, revision, checkpoint: clone(checkpoint) };
 }
-function result(status: StorageStatus, message: string, journal?: RunJournal, checkpoint?: RunCheckpoint): StorageResult {
+function result<T extends PersistedRunCheckpoint>(status: StorageStatus, message: string, journal?: RunJournal<T>, checkpoint?: T): StorageResult<T> {
   return { status, message, ...(journal ? { revision: journal.revision } : {}), ...(checkpoint ? { checkpoint: clone(checkpoint) } : {}) };
 }
 
@@ -153,7 +161,7 @@ class IndexedDbBackend implements RunStorageBackend {
   close(): void { this.database.close(); }
 }
 
-export class RunStorage {
+export class CheckpointStorage<T extends PersistedRunCheckpoint> {
   revision = 0;
   private backend?: RunStorageBackend;
   private owner: string;
@@ -162,10 +170,10 @@ export class RunStorage {
   private readonly now: () => number;
   private readonly leaseMs: number;
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
-  private last: StorageResult = { status: 'empty', message: 'No saved run.' };
+  private last: StorageResult<T> = { status: 'empty', message: 'No saved run.' };
   private closed = false;
 
-  constructor(private readonly options: RunStorageOptions = {}) {
+  constructor(private readonly options: RunStorageOptions, private readonly codec: RunStorageCodec<T>) {
     this.backend = options.backend;
     this.owner = options.ownerId ?? randomOwnerId();
     if (!validRunId(this.owner)) throw new Error('Invalid storage owner ID.');
@@ -176,25 +184,25 @@ export class RunStorage {
   get status(): StorageStatus { return this.last.status; }
   get message(): string { return this.last.message; }
 
-  async open(): Promise<StorageResult> {
-    if (this.closed) return this.remember(result('unavailable', 'Checkpoint storage was closed. Play temporarily without saving.'));
+  async open(): Promise<StorageResult<T>> {
+    if (this.closed) return this.remember(this.result('unavailable', 'Checkpoint storage was closed. Play temporarily without saving.'));
     await this.ensureTabIdentity();
-    if (this.closed) return this.remember(result('unavailable', 'Checkpoint storage was closed. Play temporarily without saving.'));
+    if (this.closed) return this.remember(this.result('unavailable', 'Checkpoint storage was closed. Play temporarily without saving.'));
     if (!this.backend) {
-      try { this.backend = await IndexedDbBackend.open(this.options.databaseName ?? RUN_DATABASE_NAME); }
+      try { this.backend = await IndexedDbBackend.open(this.options.databaseName ?? this.codec.databaseName); }
       catch (error) {
         const name = object(error) ? error.name : '';
-        return this.remember(result(name === 'VersionError' ? 'unsupported' : 'unavailable', name === 'VersionError' ? 'This checkpoint database belongs to a newer version and was preserved.' : 'Checkpoint storage is unavailable. Play temporarily without saving.'));
+        return this.remember(this.result(name === 'VersionError' ? 'unsupported' : 'unavailable', name === 'VersionError' ? 'This checkpoint database belongs to a newer version and was preserved.' : 'Checkpoint storage is unavailable. Play temporarily without saving.'));
       }
     }
-    return this.remember(result('ok', 'Checkpoint storage opened.'));
+    return this.remember(this.result('ok', 'Checkpoint storage opened.'));
   }
 
-  async load(): Promise<StorageResult> { return this.loadWithLease(false); }
-  async takeover(): Promise<StorageResult> { return this.loadWithLease(true); }
+  async load(): Promise<StorageResult<T>> { return this.loadWithLease(false); }
+  async takeover(): Promise<StorageResult<T>> { return this.loadWithLease(true); }
 
-  async save(checkpoint: RunCheckpoint): Promise<StorageResult> {
-    if (!validateRunCheckpoint(checkpoint) || checkpoint.phase === 'results') return this.remember(result('corrupt', 'Invalid checkpoint was not saved. Finished runs must be settled.'));
+  async save(checkpoint: T): Promise<StorageResult<T>> {
+    if (!this.codec.validate(checkpoint) || checkpoint.phase === 'results') return this.remember(this.result('corrupt', 'Invalid checkpoint was not saved. Finished runs must be settled.'));
     checkpoint = clone(checkpoint);
     const expectedRevision = this.revision;
     const saved = await this.perform(raw => {
@@ -204,19 +212,19 @@ export class RunStorage {
       if (blocked) return { value: raw, result: blocked, write: false };
       const conflict = this.checkWriteLease(journal, expectedRevision);
       if (conflict) return { value: raw, result: conflict, write: false };
-      if (journal.settledRunIds.includes(checkpoint.runId)) return { value: raw, result: result('settled', 'This run has already ended; its old checkpoint was rejected.', journal), write: false };
-      if (journal.current && !envelopeStatus(journal.current, journal.revision) && journal.current.checkpoint.runId !== checkpoint.runId && !journal.settledRunIds.includes(journal.current.checkpoint.runId)) return { value: raw, result: result('conflict', 'Settle the saved run before replacing it with a new run.', journal), write: false };
-      if (journal.current && !envelopeStatus(journal.current, journal.revision) && !journal.settledRunIds.includes(journal.current.checkpoint.runId)) journal.previous = clone(journal.current);
-      journal.revision++; journal.current = makeEnvelope(checkpoint, journal.revision);
+      if (journal.settledRunIds.includes(checkpoint.runId)) return { value: raw, result: this.result('settled', 'This run has already ended; its old checkpoint was rejected.', journal), write: false };
+      if (journal.current && !this.envelopeStatus(journal.current, journal.revision) && journal.current.checkpoint.runId !== checkpoint.runId && !journal.settledRunIds.includes(journal.current.checkpoint.runId)) return { value: raw, result: this.result('conflict', 'Settle the saved run before replacing it with a new run.', journal), write: false };
+      if (journal.current && !this.envelopeStatus(journal.current, journal.revision) && !journal.settledRunIds.includes(journal.current.checkpoint.runId)) journal.previous = clone(journal.current);
+      journal.revision++; journal.current = this.makeEnvelope(checkpoint, journal.revision);
       this.claim(journal);
-      return { value: journal, result: result('ok', 'Run saved at a safe checkpoint.', journal, checkpoint), write: true };
+      return { value: journal, result: this.result('ok', 'Run saved at a safe checkpoint.', journal, checkpoint), write: true };
     });
     if (saved.status === 'ok') this.startHeartbeat();
     return saved;
   }
 
-  async settle(runId: string): Promise<StorageResult> {
-    if (!validRunId(runId)) return this.remember(result('corrupt', 'Invalid run identifier.'));
+  async settle(runId: string): Promise<StorageResult<T>> {
+    if (!validRunId(runId)) return this.remember(this.result('corrupt', 'Invalid run identifier.'));
     const expectedRevision = this.revision;
     let activeAfterSettlement = false;
     const settled = await this.perform(raw => {
@@ -226,7 +234,7 @@ export class RunStorage {
       if (blocked) return { value: raw, result: blocked, write: false };
       const conflict = this.checkWriteLease(journal, expectedRevision);
       if (conflict) return { value: raw, result: conflict, write: false };
-      if (journal.settledRunIds.includes(runId)) { activeAfterSettlement = journal.current !== null; return { value: raw, result: result('settled', 'Run settlement was already recorded.', journal), write: false }; }
+      if (journal.settledRunIds.includes(runId)) { activeAfterSettlement = journal.current !== null; return { value: raw, result: this.result('settled', 'Run settlement was already recorded.', journal), write: false }; }
       journal.settledRunIds.push(runId);
       for (const key of ['current', 'previous'] as const) {
         const envelope = journal[key];
@@ -235,7 +243,7 @@ export class RunStorage {
       journal.revision++;
       activeAfterSettlement = journal.current !== null;
       if (activeAfterSettlement) this.claim(journal); else journal.lease = null;
-      return { value: journal, result: result('settled', 'Run ended; its checkpoints can no longer be resumed.', journal), write: true };
+      return { value: journal, result: this.result('settled', 'Run ended; its checkpoints can no longer be resumed.', journal), write: true };
     });
     if (settled.status === 'settled') {
       if (activeAfterSettlement) this.startHeartbeat(); else this.stopHeartbeat();
@@ -253,7 +261,7 @@ export class RunStorage {
     try {
       await this.backend?.transact(raw => {
         if (journalStatus(raw) !== null) return { value: raw, result: undefined, write: false };
-        const journal = clone(raw as RunJournal);
+        const journal = clone(raw as RunJournal<T>);
         if (this.checkCurrentCompatibility(journal)) return { value: raw, result: undefined, write: false };
         if (journal.lease?.owner !== this.owner) return { value: raw, result: undefined, write: false };
         journal.lease = null;
@@ -263,7 +271,7 @@ export class RunStorage {
     this.backend?.close?.();
   }
 
-  private async loadWithLease(takeover: boolean): Promise<StorageResult> {
+  private async loadWithLease(takeover: boolean): Promise<StorageResult<T>> {
     const loaded = await this.perform(raw => {
       const journal = this.readJournal(raw);
       if ('status' in journal) return { value: raw, result: journal, write: false };
@@ -274,21 +282,21 @@ export class RunStorage {
       if (journal.current === null) {
         const changed = raw === undefined || raw === null || journal.lease !== null;
         journal.lease = null;
-        return { value: journal, result: result('empty', 'No active saved run.', journal), write: changed };
+        return { value: journal, result: this.result('empty', 'No active saved run.', journal), write: changed };
       }
-      if (!takeover && journal.lease && journal.lease.owner !== this.owner && journal.lease.expiresAt > this.now()) return { value: raw, result: result('conflict', 'Another tab owns this run. Take over explicitly before saving.', journal), write: false };
+      if (!takeover && journal.lease && journal.lease.owner !== this.owner && journal.lease.expiresAt > this.now()) return { value: raw, result: this.result('conflict', 'Another tab owns this run. Take over explicitly before saving.', journal), write: false };
       // A displaced tab must remain stale even after the replacement lease expires.
       if (raw !== undefined && raw !== null && journal.lease?.owner !== this.owner) journal.revision++;
       this.claim(journal);
       let envelope = journal.current;
       let recovered = false;
-      if (envelopeStatus(envelope, journal.revision)) {
+      if (this.envelopeStatus(envelope, journal.revision)) {
         const previous = journal.previous;
-        if (!previous || envelopeStatus(previous, journal.revision) || journal.settledRunIds.includes(previous.checkpoint.runId)) return { value: journal, result: result('corrupt', 'Checkpoint is damaged and no valid previous revision exists. Play temporarily without saving.', journal), write: true };
-        journal.revision++; envelope = makeEnvelope(previous.checkpoint, journal.revision); journal.current = envelope; recovered = true;
+        if (!previous || this.envelopeStatus(previous, journal.revision) || journal.settledRunIds.includes(previous.checkpoint.runId)) return { value: journal, result: this.result('corrupt', 'Checkpoint is damaged and no valid previous revision exists. Play temporarily without saving.', journal), write: true };
+        journal.revision++; envelope = this.makeEnvelope(previous.checkpoint, journal.revision); journal.current = envelope; recovered = true;
       }
-      if (journal.settledRunIds.includes(envelope.checkpoint.runId)) { journal.current = null; journal.lease = null; return { value: journal, result: result('settled', 'The saved run already ended and cannot be restored.', journal), write: true }; }
-      const restored = result('ok', recovered ? 'Recovered the previous safe checkpoint.' : 'A safe run checkpoint is available.', journal, envelope.checkpoint);
+      if (journal.settledRunIds.includes(envelope.checkpoint.runId)) { journal.current = null; journal.lease = null; return { value: journal, result: this.result('settled', 'The saved run already ended and cannot be restored.', journal), write: true }; }
+      const restored = this.result('ok', recovered ? 'Recovered the previous safe checkpoint.' : 'A safe run checkpoint is available.', journal, envelope.checkpoint);
       restored.recovered = recovered;
       return { value: journal, result: restored, write: true };
     });
@@ -301,7 +309,7 @@ export class RunStorage {
     if (this.options.ownerId || this.options.backend) return;
     if (!this.identityReady) this.identityReady = (async () => {
       try {
-        const adapter = browserTabIdentity(this.options.databaseName ?? RUN_DATABASE_NAME);
+        const adapter = browserTabIdentity(this.options.databaseName ?? this.codec.databaseName);
         if (!adapter) return; // Without Web Locks, keep random ID + explicit takeover.
         const lease = await acquireTabIdentity(adapter);
         if (this.closed) { lease.release(); return; }
@@ -310,29 +318,29 @@ export class RunStorage {
     })();
     await this.identityReady;
   }
-  private readJournal(raw: unknown): RunJournal | StorageResult {
-    if (raw === undefined || raw === null) return freshJournal();
+  private readJournal(raw: unknown): RunJournal<T> | StorageResult<T> {
+    if (raw === undefined || raw === null) return freshJournal<T>();
     const issue = journalStatus(raw);
-    if (issue) return result(issue, issue === 'unsupported' ? 'This journal format is unsupported and was preserved.' : 'The checkpoint journal is damaged and was preserved. Play temporarily without saving.');
-    return clone(raw as RunJournal);
+    if (issue) return this.result(issue, issue === 'unsupported' ? 'This journal format is unsupported and was preserved.' : 'The checkpoint journal is damaged and was preserved. Play temporarily without saving.');
+    return clone(raw as RunJournal<T>);
   }
-  private checkCurrentCompatibility(journal: RunJournal): StorageResult | null {
+  private checkCurrentCompatibility(journal: RunJournal<T>): StorageResult<T> | null {
     // Even a damaged current record must not hide an incompatible previous revision.
-    for (const envelope of [journal.current, journal.previous]) if (envelope && envelopeStatus(envelope, journal.revision) === 'unsupported') return result('unsupported', 'Checkpoint schema or content is unsupported and was preserved.', journal);
+    for (const envelope of [journal.current, journal.previous]) if (envelope && this.envelopeStatus(envelope, journal.revision) === 'unsupported') return this.result('unsupported', 'Checkpoint schema or content is unsupported and was preserved.', journal);
     return null;
   }
-  private checkWriteLease(journal: RunJournal, expectedRevision: number): StorageResult | null {
-    if (journal.revision !== expectedRevision || (journal.lease && journal.lease.owner !== this.owner && journal.lease.expiresAt > this.now())) return result('conflict', 'Checkpoint changed or another tab owns it. Reload or explicitly take over.', journal);
+  private checkWriteLease(journal: RunJournal<T>, expectedRevision: number): StorageResult<T> | null {
+    if (journal.revision !== expectedRevision || (journal.lease && journal.lease.owner !== this.owner && journal.lease.expiresAt > this.now())) return this.result('conflict', 'Checkpoint changed or another tab owns it. Reload or explicitly take over.', journal);
     return null;
   }
-  private claim(journal: RunJournal): void { journal.lease = { owner: this.owner, expiresAt: this.now() + this.leaseMs }; }
-  private async perform(operation: (value: unknown) => JournalTransaction<StorageResult>): Promise<StorageResult> {
-    if (this.closed) return this.remember(result('unavailable', 'Checkpoint storage is closed. Play temporarily without saving.'));
+  private claim(journal: RunJournal<T>): void { journal.lease = { owner: this.owner, expiresAt: this.now() + this.leaseMs }; }
+  private async perform(operation: (value: unknown) => JournalTransaction<StorageResult<T>>): Promise<StorageResult<T>> {
+    if (this.closed) return this.remember(this.result('unavailable', 'Checkpoint storage is closed. Play temporarily without saving.'));
     if (!this.backend) { const opened = await this.open(); if (opened.status !== 'ok') return opened; }
     try { return this.remember(await this.backend!.transact(operation)); }
-    catch { return this.remember(result('unavailable', 'Checkpoint write/read failed. Progress is temporary until saving works again.')); }
+    catch { return this.remember(this.result('unavailable', 'Checkpoint write/read failed. Progress is temporary until saving works again.')); }
   }
-  private remember(value: StorageResult): StorageResult {
+  private remember(value: StorageResult<T>): StorageResult<T> {
     this.last = clone(value);
     // Conflicts must not silently advance the local expected revision.
     if (value.revision !== undefined && value.status !== 'conflict' && value.status !== 'unsupported') this.revision = value.revision;
@@ -352,12 +360,24 @@ export class RunStorage {
     try {
       const owned = await this.backend.transact(raw => {
         if (journalStatus(raw) !== null) return { value: raw, result: false, write: false };
-        const journal = clone(raw as RunJournal);
+        const journal = clone(raw as RunJournal<T>);
         if (this.checkCurrentCompatibility(journal)) return { value: raw, result: false, write: false };
         if (journal.lease?.owner !== this.owner) return { value: raw, result: false, write: false };
         this.claim(journal); return { value: journal, result: true, write: true };
       });
-      if (!owned) this.last = result('conflict', 'Another tab took over this run. Saving is blocked until explicit takeover.');
-    } catch { this.last = result('unavailable', 'Checkpoint storage is unavailable. Current progress is temporary.'); }
+      if (!owned) this.last = this.result('conflict', 'Another tab took over this run. Saving is blocked until explicit takeover.');
+    } catch { this.last = this.result('unavailable', 'Checkpoint storage is unavailable. Current progress is temporary.'); }
+  }
+  private envelopeStatus(value: unknown, revision: number): StorageStatus | null { return envelopeStatus(value, revision, this.codec); }
+  private makeEnvelope(checkpoint: T, revision: number): CheckpointEnvelope<T> { return makeEnvelope(checkpoint, revision, this.codec); }
+  private result(status: StorageStatus, message: string, journal?: RunJournal<T>, checkpoint?: T): StorageResult<T> { return result<T>(status, message, journal, checkpoint); }
+
+}
+
+
+// The historical M3 API and namespace remain unchanged.
+export class RunStorage extends CheckpointStorage<RunCheckpoint> {
+  constructor(options: RunStorageOptions = {}) {
+    super(options, { databaseName: RUN_DATABASE_NAME, schemaVersion: RUN_SCHEMA_VERSION, contentVersion: RUN_CONTENT_VERSION, buildId: RUN_BUILD_ID, validate: validateRunCheckpoint });
   }
 }

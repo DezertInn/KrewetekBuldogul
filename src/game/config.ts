@@ -36,6 +36,25 @@ export const BOXER_RULES = {
   poise: 30, poiseResetTicks: 120, staggerTicks: 27, staggerImmunityTicks: 60,
   spawns: [{ x: -1.2, z: 1.7 }, { x: 1.2, z: 1.7 }, { x: 0, z: 3.4 }],
 } as const;
+// GDD section 8: adjustable M4 slice values, separate from the accepted weapon timings.
+export const COUNTER_RULES = {
+  health: 140, radius: 0.4, speed: 2.6, range: 1.25, halfAngle: Math.PI / 6,
+  damage: 14, guardTicks: 60, guardHalfAngle: Math.PI / 3, guardReduction: 0.7,
+  preparationTicks: 36, activeTicks: 3, recoveryTicks: 51,
+} as const;
+export const CLINCHER_RULES = {
+  health: 180, radius: 0.44, speed: 2.5, range: 4, laneWidth: 1.2,
+  damage: 16, preparationTicks: 48, activeTicks: 24, recoveryTicks: 60,
+} as const;
+export const COACH_RULES = {
+  health: 900, radius: 0.65, speed: 2.3, phaseThreshold: 0.5, transitionTicks: 60,
+  jabRange: 1.5, jabHalfAngle: Math.PI / 6, jabDamage: 10,
+  sweepRange: 2.5, sweepHalfAngle: Math.PI * 0.65, sweepDamage: 16,
+  slamRange: 2, slamDamage: 20,
+  preparationTicks: 48, slamPreparationTicks: 60, activeTicks: 6,
+  jabRecoveryTicks: 72, heavyRecoveryTicks: 96,
+  poise: 120, staggerFactor: 0.25, staggerTicks: 24, staggerImmunityTicks: 180,
+} as const;
 export const ROOM: Room = {
   halfWidth: 8, halfDepth: 6,
   obstacles: [

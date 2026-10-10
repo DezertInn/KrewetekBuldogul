@@ -20,9 +20,9 @@
 | Audio | Cartoonish, pleasant sound effects; no music |
 | Inputs | Customizable gameplay and menu actions on keyboard/mouse, DualShock 4, and Xbox One/Series; controller USB/Bluetooth validation on compatible hardware |
 | Delivery and workflow | Browser deployment preferred; Windows desktop browsers first, other desktop systems later; free tools and a code-first Codex in VS Code workflow |
-| Current authorization | Milestone 3 short-run foundation plus a procedural heavy pillar swing, continuing the milestone 2 input/combat base. Sections 6.4–6.5 own current adjustable prototype rules. Production campaign/bosses/art/audio, milestones 4 and later, and new deployment actions remain outside scope |
+| Current authorization | Milestone 4 complete B01 slice, three levels/six rooms, three boxer roles and Coach, original native 3D/SFX, separate M4 checkpoints and validation. Sections 6.4–6.6 own adjustable rules. Remaining biomes/full campaign, later milestones, new deployment actions and Main merge remain outside scope |
 
-One local player, a fixed orthographic camera, and TypeScript + Babylon.js + Vite are approved for milestones 1–3; broader production design remains subject to review. Multiplayer, accounts, cloud saves, mobile/touch input, native builds, and a licensed real-person portrayal are not requirements. References do not authorize copying Hades characters, narrative, compositions, UI, or assets, and do not establish how Hades II renders internally.
+One local player, a fixed orthographic camera, and TypeScript + Babylon.js + Vite are approved for milestones 1–4; broader production design remains subject to review. Multiplayer, accounts, cloud saves, mobile/touch input, native builds, and a licensed real-person portrayal are not requirements. References do not authorize copying Hades characters, narrative, compositions, UI, or assets, and do not establish how Hades II renders internally.
 
 ## 2. Vision and experience
 
@@ -213,6 +213,31 @@ The pillar animation must show a two-handed ready grip, full-body preparation, a
 
 Actual checks and limitations belong in [milestone 3 validation](MILESTONE_3_VALIDATION.md). The user reports an earlier Vercel publication and successful current gameplay; neither report supplies a build URL, new physical-controller evidence, final visual approval, or an agent-tested hosted milestone 3 build.
 
+### 6.6 Authorized milestone 4 B01 slice override
+
+**Confirmed authorization, 2026-10-10:** the user reported successful M3 manual testing and requested implementation of the complete first biome, original refined native 3D models/rig/materials and non-musical SFX. This authorizes adjustable slice defaults, not final production art or balance. Preserve section 6.4 baseline DPS (gloves/pillar/rifle 120/120/108), movement 6.6 m/s, glove reach 1.95 m, all seven section 6.5 effects, cancellation/reload rules and heavy pillar timing/grip/terminal pause gates.
+
+The primary mode **Boxing gym · M4** uses stable production level IDs B01L01–03 and two authored rooms per level: five ordinary encounters and a Coach arena. Content and IDs are defined in [M4 room content](../src/run/m4-content.ts). M3 keeps its original separate route, save data and resume button.
+
+| Level | First room | Second room | Settlement |
+| --- | --- | --- | --- |
+| B01L01 Warm-up Floor | Three Jabbers, open training mats | Three Jabbers and one Counterpuncher | First room opens exit; second offers one of three distinct unowned effects |
+| B01L02 Heavy Bag Hall | Two Jabbers, Counterpuncher, Clincher; bag islands | Three Jabbers, Counterpuncher, Clincher; mixed lanes | First room opens exit; second offers one of three distinct unowned effects |
+| B01L03 Main Ring | Two Jabbers, two Counterpunchers, Clincher; approach rails | Coach alone in a broad ring | First room opens exit; Coach defeat ends M4 victory |
+
+Use the remappable interact action near an open exit. Ordinary encounters have 3–5 enemies, at most two preparing/active, one second entry grace, visible unobstructed attack starts, navigation around cover and bounded unsticking. Cleared-room traversal advances carried cooldowns and active time but cannot attack, reload, damage, or settle another reward. No automatic health/ammunition refill occurs at a room change. Exactly two upgrade choices exist; **M4 omits the full-campaign third reward, 20 HP heal and stadium transition**. The nine-level route below remains a future production proposal.
+
+| Role | Adjustable M4 behavior |
+| --- | --- |
+| B01_E01 Jabber | Preserve existing accepted behavior |
+| B01_E02 Counterpuncher | 140 HP; 120° frontal guard reduces incoming primary damage 70%, guard 1 s, counter preparation 0.6 s/14 damage, recovery 0.85 s. Side/recovery hits bypass the guard; pillar cleave respects it |
+| B01_E03 Clincher | 180 HP; 0.8 s preparation, locked-facing 4 m × 1.2 m lane, 16 damage, 1 s recovery. Swept wall/cover collision and a readable escape path |
+| B01_M01 Coach | 900 HP; phase 2 latches once at 50%, with a 1 s transition and no hidden hit/invulnerability/adds. Double jab 10 each (each has 0.8 s preparation), wide 2.5 m sweep 16, phase-2 marked 2 m-radius slam 20 with 1 s warning. Recovery 1.2 s after jabs and 1.6 s after sweep/slam |
+
+Simulation owns every hit and sound event; defeated enemies lose pending threats. The existing upgrade pool and normalized fractional Impact use positive post-defense damage recipient rules without changing original opportunity credit caps. All three weapons must complete the slice. New run clears effects; settings remain independent.
+
+M4 checkpoints contain stable level/room/encounter IDs and phase, settled-room markers, safe carry, seeded pending offers and consumed selections. Persist before each fight, after clear, and atomically after selection. Reloading combat returns to safe entry; reloading an offer preserves it. M4 uses a separate namespace/content version with the proven journal, backup, revision/lease/tombstone and temporary-session recovery. No in-flight input/animation/hit window is serialized. See [M4 validation](MILESTONE_4_VALIDATION.md) and [manual tests](MILESTONE_4_MANUAL_TESTS.md) for evidence, not this authorization text.
+
 ## 7. Biomes, levels, rooms, and route
 
 **Confirmed:** B01 is the boxing gym, B02 the football stadium, B03 the presidential palace; each contains three levels. Identifiers, level names, encounter layout, rewards, and major-enemy placement below are **Proposed**.
@@ -380,7 +405,7 @@ The authoritative SFX event inventory, variations, repetition limits, priorities
 
 ## 12. Scope and future playtest plan
 
-Milestones 1–3 have explicit implementation authorization; milestones 4 and later need a separate request. The short test run is a validation subset, not a reduction of the confirmed nine-level scope. This design document is not validation evidence; consult [milestone 3 validation](MILESTONE_3_VALIDATION.md) for current results and preserve the older reports as historical evidence. Production balance and rights clearance remain unestablished.
+Milestones 1–4 have explicit implementation authorization; later milestones need a separate request. The short test run is a validation subset, not a reduction of the confirmed nine-level scope. This design document is not validation evidence; consult [milestone 4 validation](MILESTONE_4_VALIDATION.md) for current results and preserve the older reports as historical evidence. Production balance and rights clearance remain unestablished.
 
 | Proposed stage | Content and question to resolve |
 | --- | --- |

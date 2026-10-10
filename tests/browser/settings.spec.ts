@@ -4,6 +4,7 @@ async function open(page: Page): Promise<void> {
   await page.goto('/?debug=1');
   await page.waitForFunction(() => Boolean((window as any).__prototype));
   await expect(page.locator('#fatal')).toBeHidden();
+  await page.locator('#choose-dummy').click();
 }
 async function settings(page: Page): Promise<void> {
   await page.locator('#settings-button').click();
@@ -27,6 +28,7 @@ test('keyboard binding capture, persistence, dynamic prompts and context isolati
   await page.locator('#settings-done').click();
   await expect(page.locator('#controls-help')).toContainText('F');
   await page.reload(); await page.waitForFunction(() => Boolean((window as any).__prototype));
+  await page.locator('#choose-dummy').click();
   await expect(page.locator('#controls-help')).toContainText('F');
   await page.locator('#start-button').click();
   await page.keyboard.down('w'); await page.keyboard.down('d'); await page.waitForTimeout(250); await page.keyboard.up('w'); await page.keyboard.up('d');
